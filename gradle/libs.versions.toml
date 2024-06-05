@@ -11,6 +11,8 @@ composeBom = "2023.08.00"
 
 nav_version="2.7.7"
 datastore_version="1.1.1"
+room_version = "2.6.1"
+
 
 [libraries]
 androidx-core-ktx = { group = "androidx.core", name = "core-ktx", version.ref = "coreKtx" }
@@ -30,6 +32,11 @@ androidx-material3 = { group = "androidx.compose.material3", name = "material3" 
 
 pr-nav-dep ={module ="androidx.navigation:navigation-compose", version.ref="nav_version"}
 pr-datastore-dep = { module="androidx.datastore:datastore-preferences",version.ref="datastore_version"}
+#ROOM
+pr-room-dep = {module="androidx.room:room-runtime",version.ref="room_version"}
+pr-room-an_processor_cmpiler = {module = "androidx.room:room-compiler",version.ref="room_version"}
+pr-room-kapt = {module = "androidx.room:room-compiler",version.ref="room_version"}
+
 
 [plugins]
 android-application = { id = "com.android.application", version.ref = "agp" }

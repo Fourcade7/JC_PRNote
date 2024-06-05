@@ -1,6 +1,12 @@
 plugins {
     alias(libs.plugins.android.application)
     alias(libs.plugins.jetbrains.kotlin.android)
+
+
+    kotlin("kapt")
+    id("kotlin-parcelize")
+
+    //id("com.google.devtools.ksp")
 }
 
 android {
@@ -69,6 +75,14 @@ dependencies {
 
     implementation(libs.pr.nav.dep)
     implementation(libs.pr.datastore.dep)
+
+    implementation(libs.pr.room.dep)
+    annotationProcessor(libs.pr.room.an.processor.cmpiler)
+
+    kapt(libs.pr.room.kapt)
+
+
+
 
 
 }

@@ -15,15 +15,15 @@ import androidx.compose.foundation.layout.size
 import androidx.compose.foundation.layout.width
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.foundation.text.BasicTextField
-import androidx.compose.foundation.text.KeyboardActions
 import androidx.compose.foundation.text.KeyboardOptions
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.filled.Add
-import androidx.compose.material.icons.filled.Edit
 import androidx.compose.material3.ExperimentalMaterial3Api
 import androidx.compose.material3.ExtendedFloatingActionButton
 import androidx.compose.material3.Icon
 import androidx.compose.material3.IconButton
+import androidx.compose.material3.LocalContentColor
+import androidx.compose.material3.LocalTextStyle
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.OutlinedTextField
 import androidx.compose.material3.OutlinedTextFieldDefaults
@@ -31,28 +31,33 @@ import androidx.compose.material3.Surface
 import androidx.compose.material3.Text
 import androidx.compose.material3.TextFieldDefaults
 import androidx.compose.runtime.Composable
-import androidx.compose.runtime.SideEffect
+import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
 import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
+import androidx.compose.ui.focus.FocusRequester
+import androidx.compose.ui.focus.focusRequester
 import androidx.compose.ui.graphics.Color
+import androidx.compose.ui.graphics.SolidColor
 import androidx.compose.ui.platform.LocalFocusManager
 import androidx.compose.ui.platform.LocalSoftwareKeyboardController
 import androidx.compose.ui.res.painterResource
 import androidx.compose.ui.text.TextStyle
 import androidx.compose.ui.text.font.FontWeight
-import androidx.compose.ui.text.input.ImeAction
 import androidx.compose.ui.text.input.KeyboardType
 import androidx.compose.ui.text.input.VisualTransformation
 import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.text.style.TextDecoration
+import androidx.compose.ui.text.style.TextOverflow
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import com.pr7.jc_prnote.R
+import com.pr7.jc_prnote.ui.screens.main.theme.JC_PRNoteTheme
 import com.pr7.jc_prnote.ui.screens.main.theme.Purple40
+import kotlinx.coroutines.delay
 import java.text.SimpleDateFormat
 import java.util.Date
 
@@ -98,35 +103,34 @@ fun BasicTextFieldCustom() {
 }
 
 @Composable
-fun BasicTextFieldSearchCustom() {
-
+fun CustomBasicTextFieldMulti(
+    name:String="",
+    text: (String) -> Unit,
+) {
+    //for color change with material
+    val localStyle = LocalTextStyle.current
+    val mergedStyle = localStyle.merge(TextStyle(color = LocalContentColor.current, fontSize = 15.sp))
+    //for color change with material
+    val interactionSource = remember { MutableInteractionSource() }
     val focusManager = LocalFocusManager.current
 
-    val keyboardController = LocalSoftwareKeyboardController.current
-    val interactionSource = remember { MutableInteractionSource() }
-    var name by remember {
-        mutableStateOf("")
-    }
     BasicTextField(
         value = name,
-        onValueChange = { name = it },
-        textStyle = TextStyle(
-            fontSize = 15.sp,
-            //color = Color.White
-        ),
+        onValueChange = {
+
+            text.invoke(it)
+        },
+        textStyle = mergedStyle,
+        cursorBrush = SolidColor(MaterialTheme.colorScheme.primary),
         modifier = Modifier
             .fillMaxWidth()
             .background(
                 color = Color.LightGray,
-                shape = RoundedCornerShape(28.dp)
+                shape = RoundedCornerShape(12.dp)
             ),
         interactionSource = interactionSource,
         enabled = true,
-        singleLine = true,
-
-        //for Hide Keyboard, but working without this action
-        keyboardOptions = KeyboardOptions(imeAction = ImeAction.Done),
-        keyboardActions = KeyboardActions(onDone = {keyboardController?.hide()})
+        singleLine = true
     ) {
         TextFieldDefaults.DecorationBox(
             value =name,
@@ -134,41 +138,326 @@ fun BasicTextFieldSearchCustom() {
             singleLine = true,
             enabled = true,
             visualTransformation = VisualTransformation.None,
-            placeholder = { Text(text = "enter your name") },
+            placeholder = { Text(text = "Элемент списка") },
             interactionSource = interactionSource,
-            leadingIcon = {
-              IconButton(onClick = { /*TODO*/ }) {
-                  Icon(
-                      modifier = Modifier.size(30.dp),
-                      painter = painterResource(id =R.drawable.search),
-                      contentDescription = "Search Icon"
-                  )
-              }
-            },
-            trailingIcon = {
-                if (name.isNotEmpty()) {
-                    IconButton(onClick = {
-                        name=""
-                        focusManager.clearFocus()
-                    }) {
-                        Icon(
-                            modifier = Modifier.size(17.dp),
-                            painter = painterResource(id =R.drawable.close),
-                            contentDescription = "Close Icon"
-                        )
-                    }
-                }
-            },
             // change the start padding
-            contentPadding = PaddingValues(horizontal = 10.dp, vertical = 10.dp),
+            contentPadding = PaddingValues(horizontal = 10.dp, vertical = 3.dp),
             colors = TextFieldDefaults.colors(
                 focusedIndicatorColor = Color.Transparent,
-                unfocusedIndicatorColor = Color.Transparent,
-                cursorColor = Color.White,
+                unfocusedIndicatorColor = Color.Transparent
             ),
-            shape = RoundedCornerShape(15.dp),
+            shape = RoundedCornerShape(12.dp),
 
         )
+    }
+
+}
+
+@Composable
+fun CustomBasicTextFieldDescription(
+    name:String="",
+    text: (String) -> Unit,
+) {
+
+    val focusManager = LocalFocusManager.current
+    val focusRequester = FocusRequester()
+
+    //for color change with material
+    val localStyle = LocalTextStyle.current
+    val mergedStyle = localStyle.merge(TextStyle(color = LocalContentColor.current, fontSize = 15.sp))
+    //for color change with material
+
+    val keyboardController = LocalSoftwareKeyboardController.current
+    val interactionSource = remember { MutableInteractionSource() }
+
+
+
+
+
+    BasicTextField(
+            value = name,
+            onValueChange = {
+                            text.invoke(it)
+            },
+//            textStyle = TextStyle(
+//                fontSize = 15.sp,
+//                color = Color.White
+//            ),
+            //textStyle = LocalTextStyle.current.copy(color = MaterialTheme.colorScheme.onPrimary, fontSize = 15.sp),
+            textStyle = mergedStyle,
+            cursorBrush = SolidColor(MaterialTheme.colorScheme.primary),
+            modifier = Modifier
+                .fillMaxWidth()
+                .background(
+                    color = Color.Transparent,
+                    shape = RoundedCornerShape(28.dp)
+                )
+                .focusRequester(focusRequester),
+            interactionSource = interactionSource,
+            enabled = true,
+            singleLine = false,
+
+
+            //for Hide Keyboard, but working without this action
+            //keyboardOptions = KeyboardOptions(imeAction = ImeAction.Done),
+            //keyboardActions = KeyboardActions(onDone = {keyboardController?.hide()})
+        ) {
+            TextFieldDefaults.DecorationBox(
+                value =name,
+                innerTextField = it,
+                singleLine = true,
+                enabled = true,
+                visualTransformation = VisualTransformation.None,
+                placeholder = { Text(text = "Описание") },
+                interactionSource = interactionSource,
+                leadingIcon = {
+
+                        IconButton(
+                            onClick = { /*TODO*/ },
+
+                            ) {
+                            Icon(
+                                modifier = Modifier.size(20.dp),
+                                painter = painterResource(id =R.drawable.desc),
+                                contentDescription = "Leading Icon"
+                            )
+                        }
+
+                },
+                trailingIcon = {
+                    if (name.isNotEmpty()) {
+                        IconButton(
+                            onClick = {
+                                //name=""
+                                text.invoke("")
+                                focusManager.clearFocus()
+                            }) {
+                            Icon(
+                                modifier = Modifier.size(12.dp),
+                                painter = painterResource(id =R.drawable.close),
+                                contentDescription = "Close Icon"
+                            )
+                        }
+                    }
+                },
+                // change the start padding
+                contentPadding = PaddingValues(horizontal = 8.dp, vertical = 10.dp),
+                colors = TextFieldDefaults.colors(
+                    focusedIndicatorColor = Color.Transparent,
+                    unfocusedIndicatorColor = Color.Transparent,
+                    //focusedTextColor = MaterialTheme.colorScheme.onPrimary,
+                ),
+                shape = RoundedCornerShape(15.dp),
+            )
+        }
+
+
+
+//    LaunchedEffect(key1 = Unit) {
+//        delay(100)
+//        focusRequester.requestFocus()
+//    }
+
+}
+@Composable
+fun CustomBasicTextFieldWithIcon(
+    name:String="",
+    text: (String) -> Unit,
+) {
+
+    val focusManager = LocalFocusManager.current
+    val focusRequester = FocusRequester()
+
+    //for color change with material
+    val localStyle = LocalTextStyle.current
+    val mergedStyle = localStyle.merge(TextStyle(color = LocalContentColor.current, fontSize = 15.sp))
+    //for color change with material
+
+    val keyboardController = LocalSoftwareKeyboardController.current
+    val interactionSource = remember { MutableInteractionSource() }
+
+
+
+    JC_PRNoteTheme {
+        BasicTextField(
+            value = name,
+            onValueChange = {text.invoke(it)},
+//            textStyle = TextStyle(
+//                fontSize = 15.sp,
+//                color = Color.White
+//            ),
+            //textStyle = LocalTextStyle.current.copy(color = MaterialTheme.colorScheme.onPrimary, fontSize = 15.sp),
+            textStyle = mergedStyle,
+            cursorBrush = SolidColor(MaterialTheme.colorScheme.primary),
+            modifier = Modifier
+                .fillMaxWidth()
+
+                .background(
+                    color = Color.Transparent,
+                    shape = RoundedCornerShape(28.dp)
+                )
+                .focusRequester(focusRequester),
+            interactionSource = interactionSource,
+            enabled = true,
+            singleLine = true,
+
+
+            //for Hide Keyboard, but working without this action
+            //keyboardOptions = KeyboardOptions(imeAction = ImeAction.Done),
+            //keyboardActions = KeyboardActions(onDone = {keyboardController?.hide()})
+        ) {
+            TextFieldDefaults.DecorationBox(
+                value =name,
+                innerTextField = it,
+                singleLine = true,
+                enabled = true,
+                visualTransformation = VisualTransformation.None,
+                placeholder = { Text(text = "Заголовок") },
+                interactionSource = interactionSource,
+                leadingIcon = {
+
+                        IconButton(
+                            onClick = { /*TODO*/ },
+
+                        ) {
+                            Icon(
+                                modifier = Modifier.size(20.dp),
+                                painter = painterResource(id =R.drawable.tag),
+                                contentDescription = "Leading Icon"
+                            )
+                        }
+
+                },
+                trailingIcon = {
+                    if (name.isNotEmpty()) {
+                        IconButton(
+                            onClick = {
+                            text.invoke("")
+                            focusManager.clearFocus()
+                        }) {
+                            Icon(
+                                modifier = Modifier.size(12.dp),
+                                painter = painterResource(id =R.drawable.close),
+                                contentDescription = "Close Icon"
+                            )
+                        }
+                    }
+                },
+                // change the start padding
+                contentPadding = PaddingValues(horizontal = 8.dp, vertical = 1.dp),
+                colors = TextFieldDefaults.colors(
+                    focusedIndicatorColor = Color.Transparent,
+                    unfocusedIndicatorColor = Color.Transparent,
+                    //focusedTextColor = MaterialTheme.colorScheme.onPrimary,
+                ),
+                shape = RoundedCornerShape(15.dp),
+            )
+        }
+    }
+
+
+//    LaunchedEffect(key1 = Unit) {
+//        delay(100)
+//        focusRequester.requestFocus()
+//    }
+
+}
+
+@Composable
+fun BasicTextFieldSearchCustom(
+    name:String="",
+    text: (String) -> Unit,
+) {
+
+    val focusManager = LocalFocusManager.current
+    val focusRequester = FocusRequester()
+    // focusManager.moveFocus(FocusDirection.Next) //go to next textfield
+
+    //for color change with material
+    val localStyle = LocalTextStyle.current
+    val mergedStyle = localStyle.merge(TextStyle(color = LocalContentColor.current))
+    //for color change with material
+
+    val keyboardController = LocalSoftwareKeyboardController.current
+    val interactionSource = remember { MutableInteractionSource() }
+
+
+
+
+    JC_PRNoteTheme {
+        BasicTextField(
+            value = name,
+            onValueChange = { text.invoke(it) },
+//            textStyle = TextStyle(
+//                fontSize = 15.sp,
+//                color = Color.White
+//            ),
+            //textStyle = LocalTextStyle.current.copy(color = MaterialTheme.colorScheme.onPrimary, fontSize = 15.sp),
+            textStyle = mergedStyle,
+            cursorBrush = SolidColor(MaterialTheme.colorScheme.primary),
+            modifier = Modifier
+                .fillMaxWidth()
+                .background(
+                    color = Color.Transparent,
+                    shape = RoundedCornerShape(28.dp)
+                )
+                .focusRequester(focusRequester),
+            interactionSource = interactionSource,
+            enabled = true,
+            singleLine = true,
+
+
+            //for Hide Keyboard, but working without this action
+            //keyboardOptions = KeyboardOptions(imeAction = ImeAction.Done),
+            //keyboardActions = KeyboardActions(onDone = {keyboardController?.hide()})
+        ) {
+            TextFieldDefaults.DecorationBox(
+                value =name,
+                innerTextField = it,
+                singleLine = true,
+                enabled = true,
+                visualTransformation = VisualTransformation.None,
+                placeholder = { Text(text = "Поиск...") },
+                interactionSource = interactionSource,
+                leadingIcon = {
+                    IconButton(onClick = { /*TODO*/ }) {
+                        Icon(
+                            modifier = Modifier.size(30.dp),
+                            painter = painterResource(id =R.drawable.search),
+                            contentDescription = "Search Icon"
+                        )
+                    }
+                },
+                trailingIcon = {
+                    if (name.isNotEmpty()) {
+                        IconButton(onClick = {
+                            text.invoke("")
+                            focusManager.clearFocus()
+                        }) {
+                            Icon(
+                                modifier = Modifier.size(16.dp),
+                                painter = painterResource(id =R.drawable.close),
+                                contentDescription = "Close Icon"
+                            )
+                        }
+                    }
+                },
+                // change the start padding
+                contentPadding = PaddingValues(horizontal = 10.dp, vertical = 10.dp),
+                colors = TextFieldDefaults.colors(
+                    focusedIndicatorColor = Color.Transparent,
+                    unfocusedIndicatorColor = Color.Transparent,
+                    //focusedTextColor = MaterialTheme.colorScheme.onPrimary,
+                ),
+                shape = RoundedCornerShape(15.dp),
+            )
+        }
+    }
+
+
+    LaunchedEffect(key1 = Unit) {
+        delay(100)
+        focusRequester.requestFocus()
     }
 
 }
@@ -218,17 +507,22 @@ fun MediumText(text:String, textAlign: TextAlign = TextAlign.Start, fontWeight: 
         fontSize = MaterialTheme.typography.titleMedium.fontSize,
         textAlign = textAlign,
         fontWeight = FontWeight.Bold,
-        textDecoration = textDecoration
+        textDecoration = textDecoration,
+        maxLines = 1,
+        overflow = TextOverflow.Ellipsis
     )
 }
 
 @Composable
-fun SmallText(text:String, textAlign: TextAlign = TextAlign.Start, textDecoration: TextDecoration = TextDecoration.None) {
+fun SmallText(text:String, textAlign: TextAlign = TextAlign.Start, textDecoration: TextDecoration = TextDecoration.None,color: Color= MaterialTheme.colorScheme.onSecondary) {
     Text(
         text = text,
         fontSize = MaterialTheme.typography.titleSmall.fontSize,
         textAlign = textAlign,
-        textDecoration = textDecoration
+        textDecoration = textDecoration,
+        color = color,
+        maxLines = 1,
+        overflow = TextOverflow.Ellipsis
     )
 }
 
@@ -267,8 +561,8 @@ fun CustomButton(text: String,clickable:()->Unit) {
 fun ExtendedFAB(
     modifier: Modifier=Modifier,
     text: String,
-    background: Color= Purple40,
-    textColor: Color= Color.White,
+    background: Color= MaterialTheme.colorScheme.onSecondary,
+    textColor: Color=MaterialTheme.colorScheme.onSurface,
     onClick: () -> Unit
 ) {
     ExtendedFloatingActionButton(

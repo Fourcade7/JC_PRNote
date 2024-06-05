@@ -1,4 +1,4 @@
-package com.pr7.jc_prnote.data.local
+package com.pr7.jc_prnote.data.local.datastore
 
 import android.content.Context
 import androidx.datastore.core.DataStore
