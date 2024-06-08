@@ -14,9 +14,11 @@ class MultiTask constructor(
     @ColumnInfo(name = "id")
     val uid:Int=0,
     @ColumnInfo(name = "title")
-    val title:String,
+    val title:String?=null,
     @ColumnInfo(name = "category")
-    val category:String,
+    val category:String?=null,
+    @ColumnInfo(name = "key")
+    val key:String?=null,
     @ColumnInfo(name = "status")
     val status:Boolean=false,
 ): Parcelable

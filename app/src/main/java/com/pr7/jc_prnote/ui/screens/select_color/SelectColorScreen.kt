@@ -21,35 +21,43 @@ import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.unit.dp
+import androidx.core.graphics.toColorInt
 import kotlin.random.Random
 
 
 @SuppressLint("MutableCollectionMutableState")
 @Composable
-fun SeelctColorScreen() {
+fun SelectColorScreen(
+    sendSelectedColor:(String)->Unit
+) {
 
     val colors by remember {
         mutableStateOf(
             mutableListOf(
-            Color.Red,
-            Color.Green,
-            Color.Blue,
-        )
+                "#cc0000",
+                "#ff8000",
+                "#59b300",
+                "#009999",
+                "#6666ff",
+                "#cc33ff",
+                "#d147a3"
+            )
         )
     }
 
     var selectedColor by remember{
-        mutableStateOf(Color.Transparent)
+        mutableStateOf<String?>(null)
     }
 
-    (1..20).map {
-        colors.add(randomColor())
-    }
+//    (1..20).map {
+//        colors.add(randomColor())
+//    }
     
     LazyRow(horizontalArrangement = Arrangement.spacedBy(5.dp)) {
-        itemsIndexed(colors){index: Int, item: Color ->  
+        itemsIndexed(colors){index: Int, item: String ->
             LazyItem(color = item, showIcon = selectedColor==item){
                 selectedColor=item
+                sendSelectedColor.invoke(item)
             }
         }
     }
@@ -62,14 +70,14 @@ fun SeelctColorScreen() {
 
 
 @Composable
-private fun LazyItem(color: Color,showIcon:Boolean,onClick:()->Unit) {
+private fun LazyItem(color: String,showIcon:Boolean,onClick:()->Unit) {
 
     
     Column(
         modifier = Modifier
 
             .clip(CircleShape)
-            .background(color)
+            .background(Color(color.toColorInt()))
             .size(40.dp)
             .clickable {
                        onClick.invoke()
@@ -83,7 +91,7 @@ private fun LazyItem(color: Color,showIcon:Boolean,onClick:()->Unit) {
 
                     .clip(CircleShape)
                     .border(width = 7.dp,color= Color.White, shape = CircleShape)
-                    .background(color)
+                    .background(Color(color.toColorInt()))
                     .size(35.dp)
 
             ) {
@@ -95,7 +103,7 @@ private fun LazyItem(color: Color,showIcon:Boolean,onClick:()->Unit) {
 
                     .clip(CircleShape)
                     .border(width = 1.dp,color= Color.White, shape = CircleShape)
-                    .background(color)
+                    .background(Color(color.toColorInt()))
                     .size(40.dp)
 
             ) {

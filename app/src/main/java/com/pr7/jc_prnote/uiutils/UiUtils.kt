@@ -2,9 +2,14 @@
 
 package com.pr7.jc_prnote.uiutils
 
+import android.annotation.SuppressLint
 import androidx.compose.foundation.background
+import androidx.compose.foundation.border
+import androidx.compose.foundation.clickable
 import androidx.compose.foundation.interaction.MutableInteractionSource
+import androidx.compose.foundation.isSystemInDarkTheme
 import androidx.compose.foundation.layout.Arrangement
+import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.PaddingValues
 import androidx.compose.foundation.layout.Spacer
@@ -18,6 +23,7 @@ import androidx.compose.foundation.text.BasicTextField
 import androidx.compose.foundation.text.KeyboardOptions
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.filled.Add
+import androidx.compose.material.icons.filled.Check
 import androidx.compose.material3.ExperimentalMaterial3Api
 import androidx.compose.material3.ExtendedFloatingActionButton
 import androidx.compose.material3.Icon
@@ -55,6 +61,8 @@ import androidx.compose.ui.text.style.TextOverflow
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import com.pr7.jc_prnote.R
+import com.pr7.jc_prnote.ui.screens.main.theme.BackgroundDarker
+import com.pr7.jc_prnote.ui.screens.main.theme.BackgroundDarkerChild
 import com.pr7.jc_prnote.ui.screens.main.theme.JC_PRNoteTheme
 import com.pr7.jc_prnote.ui.screens.main.theme.Purple40
 import kotlinx.coroutines.delay
@@ -83,7 +91,7 @@ fun BasicTextFieldCustom() {
         singleLine = true
     ) {
         TextFieldDefaults.DecorationBox(
-            value =name,
+            value = name,
             innerTextField = it,
             singleLine = true,
             enabled = true,
@@ -104,12 +112,13 @@ fun BasicTextFieldCustom() {
 
 @Composable
 fun CustomBasicTextFieldMulti(
-    name:String="",
+    name: String = "",
     text: (String) -> Unit,
 ) {
     //for color change with material
     val localStyle = LocalTextStyle.current
-    val mergedStyle = localStyle.merge(TextStyle(color = LocalContentColor.current, fontSize = 15.sp))
+    val mergedStyle =
+        localStyle.merge(TextStyle(color = LocalContentColor.current, fontSize = 15.sp))
     //for color change with material
     val interactionSource = remember { MutableInteractionSource() }
     val focusManager = LocalFocusManager.current
@@ -133,7 +142,7 @@ fun CustomBasicTextFieldMulti(
         singleLine = true
     ) {
         TextFieldDefaults.DecorationBox(
-            value =name,
+            value = name,
             innerTextField = it,
             singleLine = true,
             enabled = true,
@@ -148,14 +157,15 @@ fun CustomBasicTextFieldMulti(
             ),
             shape = RoundedCornerShape(12.dp),
 
-        )
+            )
     }
 
 }
 
 @Composable
 fun CustomBasicTextFieldDescription(
-    name:String="",
+    name: String = "",
+    checkError: Boolean = false,
     text: (String) -> Unit,
 ) {
 
@@ -164,7 +174,8 @@ fun CustomBasicTextFieldDescription(
 
     //for color change with material
     val localStyle = LocalTextStyle.current
-    val mergedStyle = localStyle.merge(TextStyle(color = LocalContentColor.current, fontSize = 15.sp))
+    val mergedStyle =
+        localStyle.merge(TextStyle(color = LocalContentColor.current, fontSize = 15.sp))
     //for color change with material
 
     val keyboardController = LocalSoftwareKeyboardController.current
@@ -175,82 +186,87 @@ fun CustomBasicTextFieldDescription(
 
 
     BasicTextField(
-            value = name,
-            onValueChange = {
-                            text.invoke(it)
-            },
+        value = name,
+        onValueChange = {
+            text.invoke(it)
+        },
 //            textStyle = TextStyle(
 //                fontSize = 15.sp,
 //                color = Color.White
 //            ),
-            //textStyle = LocalTextStyle.current.copy(color = MaterialTheme.colorScheme.onPrimary, fontSize = 15.sp),
-            textStyle = mergedStyle,
-            cursorBrush = SolidColor(MaterialTheme.colorScheme.primary),
-            modifier = Modifier
-                .fillMaxWidth()
-                .background(
-                    color = Color.Transparent,
-                    shape = RoundedCornerShape(28.dp)
-                )
-                .focusRequester(focusRequester),
-            interactionSource = interactionSource,
-            enabled = true,
-            singleLine = false,
-
-
-            //for Hide Keyboard, but working without this action
-            //keyboardOptions = KeyboardOptions(imeAction = ImeAction.Done),
-            //keyboardActions = KeyboardActions(onDone = {keyboardController?.hide()})
-        ) {
-            TextFieldDefaults.DecorationBox(
-                value =name,
-                innerTextField = it,
-                singleLine = true,
-                enabled = true,
-                visualTransformation = VisualTransformation.None,
-                placeholder = { Text(text = "Описание") },
-                interactionSource = interactionSource,
-                leadingIcon = {
-
-                        IconButton(
-                            onClick = { /*TODO*/ },
-
-                            ) {
-                            Icon(
-                                modifier = Modifier.size(20.dp),
-                                painter = painterResource(id =R.drawable.desc),
-                                contentDescription = "Leading Icon"
-                            )
-                        }
-
-                },
-                trailingIcon = {
-                    if (name.isNotEmpty()) {
-                        IconButton(
-                            onClick = {
-                                //name=""
-                                text.invoke("")
-                                focusManager.clearFocus()
-                            }) {
-                            Icon(
-                                modifier = Modifier.size(12.dp),
-                                painter = painterResource(id =R.drawable.close),
-                                contentDescription = "Close Icon"
-                            )
-                        }
-                    }
-                },
-                // change the start padding
-                contentPadding = PaddingValues(horizontal = 8.dp, vertical = 10.dp),
-                colors = TextFieldDefaults.colors(
-                    focusedIndicatorColor = Color.Transparent,
-                    unfocusedIndicatorColor = Color.Transparent,
-                    //focusedTextColor = MaterialTheme.colorScheme.onPrimary,
-                ),
-                shape = RoundedCornerShape(15.dp),
+        //textStyle = LocalTextStyle.current.copy(color = MaterialTheme.colorScheme.onPrimary, fontSize = 15.sp),
+        textStyle = mergedStyle,
+        cursorBrush = SolidColor(MaterialTheme.colorScheme.primary),
+        modifier = Modifier
+            .fillMaxWidth()
+            .background(
+                color = Color.Transparent,
+                shape = RoundedCornerShape(28.dp)
             )
-        }
+            .focusRequester(focusRequester),
+        interactionSource = interactionSource,
+        enabled = true,
+        singleLine = false,
 
+
+        //for Hide Keyboard, but working without this action
+        //keyboardOptions = KeyboardOptions(imeAction = ImeAction.Done),
+        //keyboardActions = KeyboardActions(onDone = {keyboardController?.hide()})
+    ) {
+        TextFieldDefaults.DecorationBox(
+            value = name,
+            innerTextField = it,
+            singleLine = true,
+            enabled = true,
+            visualTransformation = VisualTransformation.None,
+            placeholder = {
+
+                Text(
+                    text = if (checkError) "Вы не пишете описание?" else "Описание",
+                    color = if (checkError) Color.Red else MaterialTheme.colorScheme.onSecondary
+                )
+            },
+            interactionSource = interactionSource,
+            leadingIcon = {
+
+                IconButton(
+                    onClick = { /*TODO*/ },
+
+                    ) {
+                    Icon(
+                        modifier = Modifier.size(20.dp),
+                        painter = painterResource(id = R.drawable.desc),
+                        contentDescription = "Leading Icon"
+                    )
+                }
+
+            },
+            trailingIcon = {
+                if (name.isNotEmpty()) {
+                    IconButton(
+                        onClick = {
+                            //name=""
+                            text.invoke("")
+                            focusManager.clearFocus()
+                        }) {
+                        Icon(
+                            modifier = Modifier.size(12.dp),
+                            painter = painterResource(id = R.drawable.close),
+                            contentDescription = "Close Icon"
+                        )
+                    }
+                }
+            },
+            // change the start padding
+            contentPadding = PaddingValues(horizontal = 8.dp, vertical = 10.dp),
+            colors = TextFieldDefaults.colors(
+                focusedIndicatorColor = Color.Transparent,
+                unfocusedIndicatorColor = Color.Transparent,
+                //focusedTextColor = MaterialTheme.colorScheme.onPrimary,
+            ),
+            shape = RoundedCornerShape(15.dp),
+        )
+    }
 
 
 //    LaunchedEffect(key1 = Unit) {
@@ -259,18 +275,22 @@ fun CustomBasicTextFieldDescription(
 //    }
 
 }
+
 @Composable
 fun CustomBasicTextFieldWithIcon(
-    name:String="",
+    name: String = "",
+    checkError: Boolean = false,
     text: (String) -> Unit,
-) {
+
+    ) {
 
     val focusManager = LocalFocusManager.current
     val focusRequester = FocusRequester()
 
     //for color change with material
     val localStyle = LocalTextStyle.current
-    val mergedStyle = localStyle.merge(TextStyle(color = LocalContentColor.current, fontSize = 15.sp))
+    val mergedStyle =
+        localStyle.merge(TextStyle(color = LocalContentColor.current, fontSize = 15.sp))
     //for color change with material
 
     val keyboardController = LocalSoftwareKeyboardController.current
@@ -281,7 +301,7 @@ fun CustomBasicTextFieldWithIcon(
     JC_PRNoteTheme {
         BasicTextField(
             value = name,
-            onValueChange = {text.invoke(it)},
+            onValueChange = { text.invoke(it) },
 //            textStyle = TextStyle(
 //                fontSize = 15.sp,
 //                color = Color.White
@@ -307,37 +327,43 @@ fun CustomBasicTextFieldWithIcon(
             //keyboardActions = KeyboardActions(onDone = {keyboardController?.hide()})
         ) {
             TextFieldDefaults.DecorationBox(
-                value =name,
+                value = name,
                 innerTextField = it,
                 singleLine = true,
                 enabled = true,
+                //isError = true,
                 visualTransformation = VisualTransformation.None,
-                placeholder = { Text(text = "Заголовок") },
+                placeholder = {
+                    Text(
+                        text = if (checkError) "Напишите что-нибудь здесь" else "Заголовок",
+                        color = if (checkError) Color.Red else MaterialTheme.colorScheme.onSecondary
+                    )
+                },
                 interactionSource = interactionSource,
                 leadingIcon = {
 
-                        IconButton(
-                            onClick = { /*TODO*/ },
+                    IconButton(
+                        onClick = { /*TODO*/ },
 
                         ) {
-                            Icon(
-                                modifier = Modifier.size(20.dp),
-                                painter = painterResource(id =R.drawable.tag),
-                                contentDescription = "Leading Icon"
-                            )
-                        }
+                        Icon(
+                            modifier = Modifier.size(20.dp),
+                            painter = painterResource(id = R.drawable.tag),
+                            contentDescription = "Leading Icon"
+                        )
+                    }
 
                 },
                 trailingIcon = {
                     if (name.isNotEmpty()) {
                         IconButton(
                             onClick = {
-                            text.invoke("")
-                            focusManager.clearFocus()
-                        }) {
+                                text.invoke("")
+                                focusManager.clearFocus()
+                            }) {
                             Icon(
                                 modifier = Modifier.size(12.dp),
-                                painter = painterResource(id =R.drawable.close),
+                                painter = painterResource(id = R.drawable.close),
                                 contentDescription = "Close Icon"
                             )
                         }
@@ -348,6 +374,8 @@ fun CustomBasicTextFieldWithIcon(
                 colors = TextFieldDefaults.colors(
                     focusedIndicatorColor = Color.Transparent,
                     unfocusedIndicatorColor = Color.Transparent,
+                    errorIndicatorColor = Color.Transparent,
+
                     //focusedTextColor = MaterialTheme.colorScheme.onPrimary,
                 ),
                 shape = RoundedCornerShape(15.dp),
@@ -365,7 +393,7 @@ fun CustomBasicTextFieldWithIcon(
 
 @Composable
 fun BasicTextFieldSearchCustom(
-    name:String="",
+    name: String = "",
     text: (String) -> Unit,
 ) {
 
@@ -412,7 +440,7 @@ fun BasicTextFieldSearchCustom(
             //keyboardActions = KeyboardActions(onDone = {keyboardController?.hide()})
         ) {
             TextFieldDefaults.DecorationBox(
-                value =name,
+                value = name,
                 innerTextField = it,
                 singleLine = true,
                 enabled = true,
@@ -423,7 +451,7 @@ fun BasicTextFieldSearchCustom(
                     IconButton(onClick = { /*TODO*/ }) {
                         Icon(
                             modifier = Modifier.size(30.dp),
-                            painter = painterResource(id =R.drawable.search),
+                            painter = painterResource(id = R.drawable.search),
                             contentDescription = "Search Icon"
                         )
                     }
@@ -436,7 +464,7 @@ fun BasicTextFieldSearchCustom(
                         }) {
                             Icon(
                                 modifier = Modifier.size(16.dp),
-                                painter = painterResource(id =R.drawable.close),
+                                painter = painterResource(id = R.drawable.close),
                                 contentDescription = "Close Icon"
                             )
                         }
@@ -463,25 +491,26 @@ fun BasicTextFieldSearchCustom(
 }
 
 
-
-
-fun convertMillisToDate(millis: Long): String {
+@SuppressLint("SimpleDateFormat")
+fun convertMillisToDateWithClock(millis: Long): String {
     //https://www.digitalocean.com/community/tutorials/java-simpledateformat-java-date-format
     //val formatter = SimpleDateFormat("MMMM dd yyyy  HH:mm")
-    val formatter = SimpleDateFormat("dd-MMM")
+    val formatter = SimpleDateFormat("dd-MMMM HH:mm")
     return formatter.format(Date(millis))
 }
 
 
 @Composable
-fun SpacerStd(width:Int=0,height:Int=0) {
-    Spacer(modifier = Modifier
-        .width(width.dp)
-        .height(height.dp))
+fun SpacerStd(width: Int = 0, height: Int = 0) {
+    Spacer(
+        modifier = Modifier
+            .width(width.dp)
+            .height(height.dp)
+    )
 }
 
 @Composable
-fun LargeTextSemiBold(text:String ,textAlign: TextAlign = TextAlign.Start) {
+fun LargeTextSemiBold(text: String, textAlign: TextAlign = TextAlign.Start) {
     Text(
         text = text,
         fontWeight = FontWeight.SemiBold,
@@ -491,7 +520,7 @@ fun LargeTextSemiBold(text:String ,textAlign: TextAlign = TextAlign.Start) {
 }
 
 @Composable
-fun LargeText(text:String ,textAlign: TextAlign = TextAlign.Start) {
+fun LargeText(text: String, textAlign: TextAlign = TextAlign.Start) {
     Text(
         text = text,
         fontWeight = FontWeight.Bold,
@@ -501,12 +530,19 @@ fun LargeText(text:String ,textAlign: TextAlign = TextAlign.Start) {
 }
 
 @Composable
-fun MediumText(text:String, textAlign: TextAlign = TextAlign.Start, fontWeight: FontWeight = FontWeight.Normal, textDecoration: TextDecoration = TextDecoration.None) {
+fun MediumText(
+    text: String,
+    textAlign: TextAlign = TextAlign.Start,
+    fontWeight: FontWeight = FontWeight.Normal,
+    textDecoration: TextDecoration = TextDecoration.None,
+    color: Color = MaterialTheme.colorScheme.onSecondary
+) {
     Text(
         text = text,
         fontSize = MaterialTheme.typography.titleMedium.fontSize,
         textAlign = textAlign,
         fontWeight = FontWeight.Bold,
+        color = color,
         textDecoration = textDecoration,
         maxLines = 1,
         overflow = TextOverflow.Ellipsis
@@ -514,23 +550,47 @@ fun MediumText(text:String, textAlign: TextAlign = TextAlign.Start, fontWeight: 
 }
 
 @Composable
-fun SmallText(text:String, textAlign: TextAlign = TextAlign.Start, textDecoration: TextDecoration = TextDecoration.None,color: Color= MaterialTheme.colorScheme.onSecondary) {
+fun SmallText(
+    text: String,
+    textAlign: TextAlign = TextAlign.Start,
+    textDecoration: TextDecoration = TextDecoration.None,
+    color: Color = if (isSystemInDarkTheme()) BackgroundDarkerChild else BackgroundDarker,
+) {
+    Text(
+        text = text,
+        fontSize = MaterialTheme.typography.titleSmall.fontSize,
+        textAlign = textAlign,
+        textDecoration = textDecoration,
+        color =  color,
+        maxLines = 1,
+        overflow = TextOverflow.Ellipsis
+    )
+}
+
+
+
+@Composable
+fun DescriptionText(
+    text: String,
+    textAlign: TextAlign = TextAlign.Start,
+    textDecoration: TextDecoration = TextDecoration.None,
+    color: Color = MaterialTheme.colorScheme.onSecondary
+) {
     Text(
         text = text,
         fontSize = MaterialTheme.typography.titleSmall.fontSize,
         textAlign = textAlign,
         textDecoration = textDecoration,
         color = color,
-        maxLines = 1,
-        overflow = TextOverflow.Ellipsis
+        lineHeight = 17.sp
+        //maxLines = 1,
+        //overflow = TextOverflow.Ellipsis
     )
 }
 
 
-
-
 @Composable
-fun CustomButton(text: String,clickable:()->Unit) {
+fun CustomButton(text: String, clickable: () -> Unit) {
 
     Surface(
         modifier = Modifier
@@ -543,7 +603,7 @@ fun CustomButton(text: String,clickable:()->Unit) {
         }
 
 
-    ){
+    ) {
         Column(
             modifier = Modifier.fillMaxSize(),
             verticalArrangement = Arrangement.Center,
@@ -559,10 +619,10 @@ fun CustomButton(text: String,clickable:()->Unit) {
 
 @Composable
 fun ExtendedFAB(
-    modifier: Modifier=Modifier,
+    modifier: Modifier = Modifier,
     text: String,
-    background: Color= MaterialTheme.colorScheme.onSecondary,
-    textColor: Color=MaterialTheme.colorScheme.onSurface,
+    background: Color = BackgroundDarker,
+    textColor: Color = BackgroundDarkerChild,
     onClick: () -> Unit
 ) {
     ExtendedFloatingActionButton(
@@ -576,8 +636,52 @@ fun ExtendedFAB(
 }
 
 
+@Composable
+fun CircularCheckbox(
+    bgcolor: String?,
+    modifier: Modifier = Modifier,
+    checked: Boolean,
+    onCheckedChange: (Boolean) -> Unit
+) {
+    Box(
+        modifier = modifier
+            .size(24.dp)
+            .background(
+                color = if (checked) if (bgcolor != null) BackgroundDarker else MaterialTheme.colorScheme.onSurface else MaterialTheme.colorScheme.onSurface.copy(
+                    alpha = 0.1f
+                ),
 
+                shape = RoundedCornerShape(8.dp)
+            )
+            .border(
+                width = 2.dp,
+                color = if (bgcolor != null) BackgroundDarker else MaterialTheme.colorScheme.onSecondary,
+                shape = RoundedCornerShape(8.dp)
+            )
+            .clickable { onCheckedChange(!checked) },
+        contentAlignment = Alignment.Center
+    ) {
+        if (checked) {
+            Icon(
+                imageVector = Icons.Default.Check,
+                contentDescription = null,
+                tint = if (!isSystemInDarkTheme() && bgcolor == null) BackgroundDarker else BackgroundDarkerChild,
+                modifier = Modifier.size(19.dp)
+            )
+        }
+    }
+}
 
+@Composable
+fun CustomIcon(image: Int, color: Color = if (isSystemInDarkTheme()) BackgroundDarkerChild else BackgroundDarker) {
+
+    Icon(
+        painter = painterResource(id = image),
+        contentDescription = "",
+        modifier = Modifier.size(20.dp),
+        tint = color
+    )
+}
 
 
 @ExperimentalMaterial3Api
@@ -601,10 +705,12 @@ fun CustomTextField(
         },
         enabled = true,
 
-        placeholder = { Text(
-            text = placeholder,
-            fontSize = 14.sp
-        ) },
+        placeholder = {
+            Text(
+                text = placeholder,
+                fontSize = 14.sp
+            )
+        },
         colors = OutlinedTextFieldDefaults.colors(
 
             focusedBorderColor = Purple40,

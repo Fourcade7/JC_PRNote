@@ -8,6 +8,7 @@ import androidx.activity.ComponentActivity
 import androidx.activity.SystemBarStyle
 import androidx.activity.compose.setContent
 import androidx.activity.enableEdgeToEdge
+import androidx.activity.viewModels
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.fillMaxHeight
 import androidx.compose.foundation.layout.fillMaxSize
@@ -20,17 +21,22 @@ import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.graphics.toArgb
 import com.pr7.jc_prnote.data.local.datastore.DataStoreManager
-import com.pr7.jc_prnote.data.local.room.MultiTask
-import com.pr7.jc_prnote.data.local.room.RoomInstance
 import com.pr7.jc_prnote.ui.navigation.SetupNavGraph
+import com.pr7.jc_prnote.ui.screens.add.AddViewModel
+import com.pr7.jc_prnote.ui.screens.home.HomeViewModel
 import com.pr7.jc_prnote.ui.screens.main.theme.JC_PRNoteTheme
 import kotlinx.coroutines.DelicateCoroutinesApi
 
 class MainActivity : ComponentActivity() {
+
+    val addViewModel:AddViewModel by viewModels<AddViewModel>()
+    val homeViewModel:HomeViewModel by viewModels<HomeViewModel>()
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
         val dataStoreManager= DataStoreManager(this)
-        enableEdgeToEdge(statusBarStyle = SystemBarStyle.auto(Color.Black.toArgb(),Color.White.toArgb()))
+        enableEdgeToEdge(statusBarStyle = SystemBarStyle.auto(Color.Red.toArgb(),Color.White.toArgb()))
+
+
 
 
         setContent {
@@ -39,9 +45,16 @@ class MainActivity : ComponentActivity() {
                 Scaffold(modifier = Modifier.fillMaxSize()) { innerPadding ->
 
 
-                   Column(modifier = Modifier.fillMaxHeight().padding(innerPadding).imePadding()) {
+                   Column(modifier = Modifier
+                       .fillMaxHeight()
+                       .padding(innerPadding)
+                       .imePadding()) {
 
-                       MainScreen(dataStoreManager)
+                       MainScreen(
+                           dataStoreManager,
+                           addViewModel = addViewModel,
+                           homeViewModel = homeViewModel
+                       )
 
 
                    }
@@ -54,7 +67,11 @@ class MainActivity : ComponentActivity() {
 @OptIn(DelicateCoroutinesApi::class)
 @SuppressLint("UnrememberedMutableState", "CoroutineCreationDuringComposition")
 @Composable
-fun MainScreen(dataStoreManager: DataStoreManager) {
+fun MainScreen(
+    dataStoreManager: DataStoreManager,
+    addViewModel: AddViewModel,
+    homeViewModel: HomeViewModel
+) {
 
 //    val getdata by dataStoreManager.loadString("key100").collectAsState(initial = "")
 //    val scope = rememberCoroutineScope()
@@ -69,6 +86,9 @@ fun MainScreen(dataStoreManager: DataStoreManager) {
 
 
 
-    SetupNavGraph()
+    SetupNavGraph(
+        addViewModel = addViewModel,
+        homeViewModel=homeViewModel
+    )
 
 }

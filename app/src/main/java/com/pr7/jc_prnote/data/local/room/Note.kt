@@ -14,17 +14,21 @@ class Note constructor(
     @ColumnInfo(name = "id")
     val uid:Int=0,
     @ColumnInfo(name = "title")
-    val title:String,
+    val title:String?=null,
     @ColumnInfo(name = "description")
-    val description:String,
+    val description:String?=null,
     @ColumnInfo(name = "dataTime")
-    val dataTime:String,
+    val dataTime:String?=null,
     @ColumnInfo(name = "dataTime2")
-    val dataTime2:String,
+    val dataTime2:String?=null,
     @ColumnInfo(name = "priority")
-    val priority:String,
+    val priority:String?=null,
     @ColumnInfo(name = "category")
-    val category:String,
+    val category:String?=null,
+    @ColumnInfo(name = "key")
+    val key:String?=null,
+    @ColumnInfo(name = "backgroundColor")
+    val backgroundColor:String?=null,
     @ColumnInfo(name = "status")
     val status:Boolean=false,
 ): Parcelable

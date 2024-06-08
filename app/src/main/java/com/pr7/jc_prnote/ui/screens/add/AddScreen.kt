@@ -3,12 +3,14 @@
 package com.pr7.jc_prnote.ui.screens.add
 
 import android.annotation.SuppressLint
+import android.util.Log
 import androidx.compose.animation.AnimatedVisibility
 import androidx.compose.animation.expandVertically
 import androidx.compose.animation.scaleIn
 import androidx.compose.animation.scaleOut
 import androidx.compose.animation.shrinkVertically
 import androidx.compose.foundation.BorderStroke
+import androidx.compose.foundation.isSystemInDarkTheme
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
@@ -29,7 +31,6 @@ import androidx.compose.material.icons.filled.Close
 import androidx.compose.material.icons.filled.Done
 import androidx.compose.material3.ButtonDefaults
 import androidx.compose.material3.Card
-import androidx.compose.material3.CardColors
 import androidx.compose.material3.CardDefaults
 import androidx.compose.material3.DatePicker
 import androidx.compose.material3.DatePickerDefaults
@@ -42,9 +43,7 @@ import androidx.compose.material3.IconButton
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.Switch
 import androidx.compose.material3.SwitchDefaults
-import androidx.compose.material3.Text
 import androidx.compose.material3.TextButton
-import androidx.compose.material3.contentColorFor
 import androidx.compose.material3.rememberDatePickerState
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.getValue
@@ -60,13 +59,14 @@ import androidx.compose.ui.res.painterResource
 import androidx.compose.ui.unit.dp
 import androidx.navigation.NavHostController
 import com.pr7.jc_prnote.R
+import com.pr7.jc_prnote.data.local.room.MultiTask
+import com.pr7.jc_prnote.data.local.room.Note
+import com.pr7.jc_prnote.data.local.room.TAG
 import com.pr7.jc_prnote.data.model.Category
 import com.pr7.jc_prnote.data.model.Priority
-import com.pr7.jc_prnote.ui.screens.main.theme.Pink40
-import com.pr7.jc_prnote.ui.screens.main.theme.Purple40
-import com.pr7.jc_prnote.ui.screens.main.theme.Purple80
-import com.pr7.jc_prnote.ui.screens.main.theme.PurpleGrey80
-import com.pr7.jc_prnote.ui.screens.select_color.SeelctColorScreen
+import com.pr7.jc_prnote.ui.screens.main.theme.BackgroundDarker
+import com.pr7.jc_prnote.ui.screens.main.theme.BackgroundDarkerChild
+import com.pr7.jc_prnote.ui.screens.select_color.SelectColorScreen
 import com.pr7.jc_prnote.uiutils.CustomBasicTextFieldDescription
 import com.pr7.jc_prnote.uiutils.CustomBasicTextFieldMulti
 import com.pr7.jc_prnote.uiutils.CustomBasicTextFieldWithIcon
@@ -74,11 +74,15 @@ import com.pr7.jc_prnote.uiutils.ExtendedFAB
 import com.pr7.jc_prnote.uiutils.LargeTextSemiBold
 import com.pr7.jc_prnote.uiutils.SmallText
 import com.pr7.jc_prnote.uiutils.SpacerStd
+import com.pr7.jc_prnote.uiutils.convertMillisToDateWithClock
 import java.util.Calendar
 
 
 @Composable
-fun AddScreen(navHostController: NavHostController) {
+fun AddScreen(
+    navHostController: NavHostController,
+    addViewModel: AddViewModel
+) {
 
     var mainTitle by remember {
         mutableStateOf("")
@@ -86,16 +90,41 @@ fun AddScreen(navHostController: NavHostController) {
     var descriptionTitle by remember {
         mutableStateOf("")
     }
-    var switcherListScreen by remember {
+
+    var selectedCategoryName by remember {
+        mutableStateOf<String?>(null)
+    }
+    var selectedPriorityName by remember {
+        mutableStateOf<String?>(null)
+    }
+    var selectedDate by remember {
+        mutableStateOf<String?>(null)
+    }
+    var selectedColor by remember {
+        mutableStateOf<String?>(null)
+    }
+
+    var isErrorEmptyTitle by remember {
         mutableStateOf(false)
     }
-      var switcherAddSetScreen by remember {
+    var isErrorEmptyDescription by remember {
         mutableStateOf(false)
     }
 
-    Box(modifier = Modifier
-        .fillMaxSize()
-        .padding(15.dp)) {
+    var today by remember {
+        mutableStateOf(convertMillisToDateWithClock(System.currentTimeMillis()))
+    }
+
+    var mList by remember {
+        mutableStateOf(listOf<String>())
+    }
+
+
+    Box(
+        modifier = Modifier
+            .fillMaxSize()
+            .padding(15.dp)
+    ) {
 
         Column(
             modifier = Modifier
@@ -104,17 +133,26 @@ fun AddScreen(navHostController: NavHostController) {
         ) {
             LargeTextSemiBold(text = "Add Note")
             SpacerStd(height = 10)
-            CustomBasicTextFieldWithIcon(name = mainTitle){
-                mainTitle=it
+
+            CustomBasicTextFieldWithIcon(name = mainTitle, checkError = isErrorEmptyTitle) {
+                mainTitle = it
             }
             SpacerStd(height = 10)
-            CustomBasicTextFieldDescription(name = descriptionTitle){
-                descriptionTitle=it
+            CustomBasicTextFieldDescription(
+                name = descriptionTitle,
+                checkError = isErrorEmptyDescription
+            ) {
+                descriptionTitle = it
             }
             //SpacerStd(height = 10)
-            AddMultiTask()
+            AddMultiTask(addViewModel = addViewModel) { mList = it }
             Divider()
-            AdditionalSettings()
+            AdditionalSettings(
+                selectedCategoryTitle = { selectedCategoryName = it },
+                selectedPriorityTitle = { selectedPriorityName = it },
+                sendSelectedDate = { selectedDate = it },
+                sendSelectedColor = { selectedColor = it }
+            )
 
         }
 
@@ -122,6 +160,42 @@ fun AddScreen(navHostController: NavHostController) {
             modifier = Modifier.align(Alignment.BottomEnd),
             text = "Добавлять"
         ) {
+            //ADD to Database
+            if (mainTitle.isNotEmpty() && descriptionTitle.isNotEmpty()) {
+                val key = System.currentTimeMillis().toString()
+                addViewModel.addNote(
+                    note = Note(
+                        title = mainTitle,
+                        description = descriptionTitle,
+                        category = selectedCategoryName,
+                        priority = selectedPriorityName,
+                        key = key,
+                        dataTime = today,
+                        dataTime2 = selectedDate,
+                        backgroundColor = selectedColor,
+
+                        )
+                )
+                if (mList.isNotEmpty()) {
+                    addViewModel.addMultiTask(
+                        category = selectedCategoryName ?: "All",
+                        key = key,
+                        list = mList
+                    )
+
+                }
+
+            } else {
+                if (mainTitle.isEmpty()) {
+                    isErrorEmptyTitle = true
+                }
+                if (descriptionTitle.isEmpty()) {
+                    isErrorEmptyDescription = true
+                }
+
+
+            }
+
 
         }
     }
@@ -130,7 +204,10 @@ fun AddScreen(navHostController: NavHostController) {
 @OptIn(ExperimentalLayoutApi::class)
 @SuppressLint("MutableCollectionMutableState")
 @Composable
-private fun AddMultiTask() {
+private fun AddMultiTask(
+    addViewModel: AddViewModel,
+    mTList: (List<String>) -> Unit
+) {
 
     val focusManager = LocalFocusManager.current
     var switcher by remember {
@@ -146,12 +223,12 @@ private fun AddMultiTask() {
     var multitasksList by remember {
         mutableStateOf(
             mutableListOf(
-            "Первый",
-            "Второй"
-        )
+                "Первый",
+                "Второй"
+            )
         )
     }
-    val mlist= mutableListOf<String>()
+    val mlist = mutableListOf<String>()
 
 
     Column() {
@@ -159,21 +236,20 @@ private fun AddMultiTask() {
             modifier = Modifier.fillMaxWidth(),
             verticalAlignment = Alignment.CenterVertically
         ) {
-            SmallText(text = "Добавить список", color = MaterialTheme.colorScheme.tertiary)
+            SmallText(text = "Добавить список", color = MaterialTheme.colorScheme.onSecondary)
             Spacer(modifier = Modifier.weight(1f))
             Switch(
                 colors = SwitchDefaults.colors(
-
-                    checkedThumbColor = MaterialTheme.colorScheme.onPrimary,
-                    checkedTrackColor = MaterialTheme.colorScheme.onSurface
+                    checkedThumbColor = if (isSystemInDarkTheme()) BackgroundDarkerChild else BackgroundDarker,
+                    checkedTrackColor = if (isSystemInDarkTheme()) BackgroundDarker else BackgroundDarkerChild
                 ),
                 checked = switcher,
                 onCheckedChange = {
-                focusManager.clearFocus()
-                switcher = !switcher
-                openSettings = !openSettings
+                    focusManager.clearFocus()
+                    switcher = !switcher
+                    openSettings = !openSettings
 
-            })
+                })
         }
         AnimatedVisibility(
             visible = openSettings,
@@ -182,11 +258,11 @@ private fun AddMultiTask() {
         ) {
             Column {
 
-                    FlowRow(
-                        horizontalArrangement = Arrangement.spacedBy(5.dp),
-                        verticalArrangement = Arrangement.spacedBy(5.dp),
-                    ) {
-                        multitasksList.forEachIndexed { index, s ->
+                FlowRow(
+                    horizontalArrangement = Arrangement.spacedBy(5.dp),
+                    verticalArrangement = Arrangement.spacedBy(5.dp),
+                ) {
+                    multitasksList.forEachIndexed { index, s ->
                         Card(
                             colors = CardDefaults.cardColors(containerColor = MaterialTheme.colorScheme.onSurface)
                         ) {
@@ -195,13 +271,18 @@ private fun AddMultiTask() {
                                 modifier = Modifier.padding(horizontal = 10.dp, vertical = 5.dp)
                             ) {
 
-                                SmallText(text = "${index + 1}. $s", color =  MaterialTheme.colorScheme.onSecondary)
+                                SmallText(
+                                    text = "${index + 1}. $s",
+                                    color = MaterialTheme.colorScheme.onSecondary
+                                )
                                 SpacerStd(width = 3)
                                 IconButton(
                                     modifier = Modifier.size(20.dp),
                                     onClick = {
                                         mlist.remove(s)
-                                        multitasksList= mutableListOf<String>().apply { addAll(mlist) }
+                                        multitasksList =
+                                            mutableListOf<String>().apply { addAll(mlist) }
+                                        mTList.invoke(multitasksList)
                                     }) {
                                     Icon(
                                         imageVector = Icons.Filled.Close,
@@ -217,21 +298,23 @@ private fun AddMultiTask() {
                     verticalAlignment = Alignment.CenterVertically
                 ) {
                     Row(modifier = Modifier.weight(1f)) {
-                        CustomBasicTextFieldMulti(name=multiTaskTitle) {
-                            multiTaskTitle=it
+                        CustomBasicTextFieldMulti(name = multiTaskTitle) {
+                            multiTaskTitle = it
                         }
                     }
                     IconButton(onClick = {
                         mlist.add(multiTaskTitle)
-                        multitasksList= mutableListOf<String>().apply { addAll(mlist) }
-                        multiTaskTitle=""
+                        multitasksList = mutableListOf<String>().apply { addAll(mlist) }
+                        multiTaskTitle = ""
+
+                        mTList.invoke(multitasksList)
 
 
                     }) {
                         Icon(
                             imageVector = Icons.Filled.Done,
                             contentDescription = "Done",
-                            tint = MaterialTheme.colorScheme.onPrimary
+                            tint = if (isSystemInDarkTheme()) BackgroundDarkerChild else BackgroundDarker
                         )
                     }
 
@@ -247,7 +330,12 @@ private fun AddMultiTask() {
 }
 
 @Composable
-private fun AdditionalSettings() {
+private fun AdditionalSettings(
+    selectedCategoryTitle: (String) -> Unit,
+    selectedPriorityTitle: (String) -> Unit,
+    sendSelectedDate: (String) -> Unit,
+    sendSelectedColor: (String) -> Unit
+) {
     val focusManager = LocalFocusManager.current
     var switcher by remember {
         mutableStateOf(false)
@@ -257,6 +345,9 @@ private fun AdditionalSettings() {
     }
 
 
+
+
+
     Column(
 
     ) {
@@ -264,20 +355,19 @@ private fun AdditionalSettings() {
             modifier = Modifier.fillMaxWidth(),
             verticalAlignment = Alignment.CenterVertically
         ) {
-            SmallText(text = "Дополнительные настройки", color = MaterialTheme.colorScheme.tertiary)
+            SmallText(text = "Дополнительные настройки", color = MaterialTheme.colorScheme.onSecondary)
             Spacer(modifier = Modifier.weight(1f))
             Switch(
                 colors = SwitchDefaults.colors(
-
-                    checkedThumbColor = MaterialTheme.colorScheme.onPrimary,
-                    checkedTrackColor = MaterialTheme.colorScheme.onSurface
+                    checkedThumbColor = if (isSystemInDarkTheme()) BackgroundDarkerChild else BackgroundDarker,
+                    checkedTrackColor = if (isSystemInDarkTheme()) BackgroundDarker else BackgroundDarkerChild
                 ),
                 checked = switcher,
                 onCheckedChange = {
-                focusManager.clearFocus()
-                switcher = !switcher
-                openSettings = !openSettings
-            })
+                    focusManager.clearFocus()
+                    switcher = !switcher
+                    openSettings = !openSettings
+                })
         }
         AnimatedVisibility(
             visible = openSettings,
@@ -288,25 +378,24 @@ private fun AdditionalSettings() {
 
                 Divider()
 
-                SmallText(text = "Выберите категорию", color = MaterialTheme.colorScheme.tertiary )
+                SmallText(text = "Выберите категорию", color = MaterialTheme.colorScheme.tertiary)
                 SpacerStd(height = 1)
-                CategoryScreen()
+                CategoryScreen { selectedCategoryTitle.invoke(it) }
                 Divider()
                 SpacerStd(height = 1)
-                SmallText(text = "Выберите даты", color = MaterialTheme.colorScheme.tertiary )
-                DateTimeScreen()
+                SmallText(text = "Выберите даты", color = MaterialTheme.colorScheme.tertiary)
+                DateTimeScreen { sendSelectedDate.invoke(it) }
                 Divider()
                 SpacerStd(height = 8)
-                SmallText(text = "Выбрать цвет фона", color = MaterialTheme.colorScheme.tertiary )
+                SmallText(text = "Выбрать цвет фона", color = MaterialTheme.colorScheme.tertiary)
                 SpacerStd(height = 8)
-                SeelctColorScreen()
+                SelectColorScreen() { sendSelectedColor.invoke(it) }
 
                 SpacerStd(height = 8)
                 Divider()
-                SmallText(text = "Приоритет", color = MaterialTheme.colorScheme.tertiary )
-                PriorityScreen()
+                SmallText(text = "Приоритет", color = MaterialTheme.colorScheme.tertiary)
+                PriorityScreen { selectedPriorityTitle.invoke(it) }
                 SpacerStd(height = 8)
-
 
 
             }
@@ -318,11 +407,14 @@ private fun AdditionalSettings() {
 
 
 @Composable
-private fun CategoryScreen() {
+private fun CategoryScreen(
+    selectedCategoryName: (String) -> Unit
+) {
 
-    var categorys by remember {
+    val categorys by remember {
         mutableStateOf(
             listOf(
+                Category(name = "Все", image = R.drawable.all),
                 Category(name = "Работа", image = R.drawable.work),
                 Category(name = "Дом", image = R.drawable.home),
                 Category(name = "Еда", image = R.drawable.food),
@@ -345,7 +437,7 @@ private fun CategoryScreen() {
 
     }
     var selectedItem by remember {
-        mutableStateOf(Category(name = "Работа", image = R.drawable.work))
+        mutableStateOf(Category(name = "Все", image = R.drawable.all))
     }
 
 
@@ -355,32 +447,46 @@ private fun CategoryScreen() {
         items(categorys) {
             Card(
 
-                border = BorderStroke(width = 1.dp, color = if (selectedItem==it) Color.Transparent else Color.Transparent),
-                //colors = CardDefaults.cardColors(containerColor = if (selectedItem==it) MaterialTheme.colorScheme.onPrimary else MaterialTheme.colorScheme.onSurface),
-                colors = CardDefaults.cardColors(containerColor = if (selectedItem==it) MaterialTheme.colorScheme.onPrimary else MaterialTheme.colorScheme.onSurface),
+                border = BorderStroke(
+                    width = 1.dp,
+                    color = if (selectedItem == it) Color.Transparent else Color.Transparent
+                ),
+                colors = CardDefaults.cardColors(containerColor = if (selectedItem == it) MaterialTheme.colorScheme.onSecondary else MaterialTheme.colorScheme.onSurface),
                 onClick = {
-                    selectedItem=it
-//                    categorys=categorys.map {
-//                        if (it.isSelected){
-//                            it.copy(isSelected = false)
-//                        }else{
-//                            it.copy(isSelected = true)
-//                        }
-//
-//                    }
+                    selectedItem = it
+                    selectedCategoryName.invoke(it.name)
+
                 }
             ) {
                 Row(
                     modifier = Modifier.padding(horizontal = 10.dp, vertical = 5.dp)
                 ) {
-                    Icon(
-                        painter = painterResource(id = it.image),
-                        contentDescription = "",
-                        modifier = Modifier.size(20.dp),
-                        tint = if (selectedItem==it) MaterialTheme.colorScheme.onSurface else MaterialTheme.colorScheme.onSecondary
-                    )
-                    SpacerStd(width = 5)
-                    SmallText(text = it.name,color=if (selectedItem==it) MaterialTheme.colorScheme.onSurface else MaterialTheme.colorScheme.onSecondary)
+                    if (selectedItem == it){
+                        Icon(
+                            painter = painterResource(id = it.image),
+                            contentDescription = "",
+                            modifier = Modifier.size(20.dp),
+                            tint = if (selectedItem == it && isSystemInDarkTheme()) BackgroundDarker else BackgroundDarkerChild
+                        )
+                        SpacerStd(width = 5)
+
+                        SmallText(
+                            text = it.name,
+                            color = if (selectedItem == it && isSystemInDarkTheme()) BackgroundDarker else BackgroundDarkerChild
+                        )
+                    }else{
+                        Icon(
+                            painter = painterResource(id = it.image),
+                            contentDescription = "",
+                            modifier = Modifier.size(20.dp),
+                            //tint = if (selectedItem == it && isSystemInDarkTheme()) BackgroundDarker else BackgroundDarkerChild
+                        )
+                        SpacerStd(width = 5)
+                        SmallText(
+                            text = it.name,
+                        )
+                    }
+
                 }
             }
         }
@@ -388,8 +494,11 @@ private fun CategoryScreen() {
 }
 
 
+
 @Composable
-private fun PriorityScreen(modifier: Modifier = Modifier) {
+private fun PriorityScreen(
+    selectedPriorityName: (String) -> Unit
+) {
 
     val array = remember {
         listOf(
@@ -400,8 +509,9 @@ private fun PriorityScreen(modifier: Modifier = Modifier) {
         )
     }
 
+
     var selectedItem by remember {
-        mutableStateOf(Priority(name = "Средний", image = R.drawable.gauge))
+        mutableStateOf<Priority?>(null)
     }
 
     LazyRow(
@@ -411,23 +521,46 @@ private fun PriorityScreen(modifier: Modifier = Modifier) {
 
             Card(
 
-                border = BorderStroke(width = 1.dp, color = Color.Transparent),
-                colors = CardDefaults.cardColors(containerColor = if (selectedItem==it) MaterialTheme.colorScheme.onPrimary else MaterialTheme.colorScheme.onSurface),
+                border = BorderStroke(
+                    width = 1.dp,
+                    color = if (selectedItem == it) Color.Transparent else Color.Transparent
+                ),
+                colors = CardDefaults.cardColors(containerColor = if (selectedItem == it) MaterialTheme.colorScheme.onSecondary else MaterialTheme.colorScheme.onSurface),
                 onClick = {
-                    selectedItem=it
+                    selectedItem = it
+                    selectedPriorityName.invoke(it.name)
+
                 }
             ) {
                 Row(
                     modifier = Modifier.padding(horizontal = 10.dp, vertical = 5.dp)
                 ) {
-                    Icon(
-                        painter = painterResource(id = it.image),
-                        contentDescription = "",
-                        modifier = Modifier.size(20.dp),
-                        tint = if (selectedItem==it) MaterialTheme.colorScheme.onSurface else MaterialTheme.colorScheme.onSecondary
-                    )
-                    SpacerStd(width = 5)
-                    SmallText(text = it.name,color=if (selectedItem==it) MaterialTheme.colorScheme.onSurface else MaterialTheme.colorScheme.onSecondary)
+                    if (selectedItem == it){
+                        Icon(
+                            painter = painterResource(id = it.image),
+                            contentDescription = "",
+                            modifier = Modifier.size(20.dp),
+                            tint = if (selectedItem == it && isSystemInDarkTheme()) BackgroundDarker else BackgroundDarkerChild
+                        )
+                        SpacerStd(width = 5)
+
+                        SmallText(
+                            text = it.name,
+                            color = if (selectedItem == it && isSystemInDarkTheme()) BackgroundDarker else BackgroundDarkerChild
+                        )
+                    }else{
+                        Icon(
+                            painter = painterResource(id = it.image),
+                            contentDescription = "",
+                            modifier = Modifier.size(20.dp),
+                            //tint = if (selectedItem == it && isSystemInDarkTheme()) BackgroundDarker else BackgroundDarkerChild
+                        )
+                        SpacerStd(width = 5)
+                        SmallText(
+                            text = it.name,
+                        )
+                    }
+
                 }
             }
         }
@@ -437,9 +570,15 @@ private fun PriorityScreen(modifier: Modifier = Modifier) {
 
 
 @Composable
-private fun DateTimeScreen(modifier: Modifier = Modifier) {
+private fun DateTimeScreen(
+    sendSelectedDate: (String) -> Unit
+) {
     val calendar = Calendar.getInstance()
-    calendar.set(calendar.get(Calendar.YEAR), calendar.get(Calendar.MONTH), calendar.get(Calendar.DAY_OF_MONTH)+1)
+    calendar.set(
+        calendar.get(Calendar.YEAR),
+        calendar.get(Calendar.MONTH),
+        calendar.get(Calendar.DAY_OF_MONTH)
+    )
     val datePickerState = rememberDatePickerState(
         initialSelectedDateMillis = calendar.timeInMillis,
         yearRange = 2020..2025
@@ -451,6 +590,7 @@ private fun DateTimeScreen(modifier: Modifier = Modifier) {
         convertMillisToDate(it)
     } ?: ""
     var showDatePicker by remember { mutableStateOf(false) }
+
 
     Card(
 
@@ -470,7 +610,7 @@ private fun DateTimeScreen(modifier: Modifier = Modifier) {
                 tint = MaterialTheme.colorScheme.onSecondary //else MaterialTheme.colorScheme.onSecondary
             )
             SpacerStd(width = 5)
-            SmallText(text = "$selectedDate", color =  MaterialTheme.colorScheme.onSecondary)
+            SmallText(text = selectedDate, color = MaterialTheme.colorScheme.onSecondary)
             //Установите время окончания
         }
     }
@@ -483,10 +623,11 @@ private fun DateTimeScreen(modifier: Modifier = Modifier) {
             confirmButton = {
                 TextButton(
                     colors = ButtonDefaults.buttonColors(
-                       containerColor = Color.Transparent
+                        containerColor = Color.Transparent
                     ),
                     onClick = {
                         showDatePicker = false
+                        sendSelectedDate.invoke(selectedDate)
                     }
                 ) {
                     SmallText(text = "Ok", color = MaterialTheme.colorScheme.onSecondary)

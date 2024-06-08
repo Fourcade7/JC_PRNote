@@ -9,23 +9,37 @@ import androidx.navigation.compose.NavHost
 import androidx.navigation.compose.composable
 import androidx.navigation.compose.rememberNavController
 import com.pr7.jc_prnote.ui.screens.add.AddScreen
+import com.pr7.jc_prnote.ui.screens.add.AddViewModel
 import com.pr7.jc_prnote.ui.screens.home.HomeScreen
+import com.pr7.jc_prnote.ui.screens.home.HomeViewModel
 import com.pr7.jc_prnote.ui.screens.onboarding.OnBoardingMainScreen
 import com.pr7.jc_prnote.ui.screens.splash.SplashScreen
 
 
 @Composable
 fun SetupNavGraph(
-    navHostController: NavHostController = rememberNavController()
+    navHostController: NavHostController = rememberNavController(),
+    addViewModel: AddViewModel,
+    homeViewModel: HomeViewModel
 ) {
     NavHost(
         navController = navHostController,
         startDestination = Screens.Home.route,
 
-    ) {
-        composable(Screens.Splash.route){ SplashScreen(navHostController=navHostController)}
-        composable(Screens.Home.route){ HomeScreen(navHostController=navHostController) }
-        composable(Screens.OnBoard.route){ OnBoardingMainScreen(navHostController=navHostController) }
-        composable(Screens.Add.route){ AddScreen(navHostController=navHostController) }
+        ) {
+        composable(Screens.Splash.route) { SplashScreen(navHostController = navHostController) }
+        composable(Screens.Home.route) {
+            HomeScreen(
+                navHostController = navHostController,
+                homeViewModel = homeViewModel
+            )
+        }
+        composable(Screens.OnBoard.route) { OnBoardingMainScreen(navHostController = navHostController) }
+        composable(Screens.Add.route) {
+            AddScreen(
+                navHostController = navHostController,
+                addViewModel = addViewModel
+            )
+        }
     }
 }

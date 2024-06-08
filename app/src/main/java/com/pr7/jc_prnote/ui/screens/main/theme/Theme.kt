@@ -14,6 +14,19 @@ import androidx.compose.ui.platform.LocalContext
 private val DarkColorScheme = darkColorScheme(
     primary = Purple80,
     secondary = PurpleGrey80,
+
+    //tertiary = Color(0xFF98C0BB),
+
+    //Background
+    onPrimary = Color(0xFF009688),
+    onSurface = Color(0xFF363636),
+
+    //TEXT
+    onTertiary = Color(0xFF98C0BB), //Selected
+    //MAIN COLOR
+    onSecondary = Color(0xFFC2C2C2),
+
+  /*
     //TEXT
     tertiary = Color(0xFF98C0BB),
 
@@ -24,6 +37,8 @@ private val DarkColorScheme = darkColorScheme(
     //TEXT
     onTertiary = Color(0xFF98C0BB), //Selected
     onSecondary = Color(0xFF5DA89E),
+    */
+
 
 
 )
@@ -31,8 +46,21 @@ private val DarkColorScheme = darkColorScheme(
 private val LightColorScheme = lightColorScheme(
     primary = Purple40,
     secondary = PurpleGrey40,
-    //TEXT
+
     tertiary = Color.Black,
+
+    //Background
+    onPrimary = Color(0xFF009688),
+    onSurface = Color(0xFFE9E9E9),
+
+    //TEXT
+    //MAIN COLOR
+    onSecondary = Color(0xFF1C2726),
+    onTertiary = Color.White,
+    //TEXT
+     /*
+
+     tertiary = Color.Black,
 
     //Background
     onPrimary = Color(0xFF009688),
@@ -41,6 +69,10 @@ private val LightColorScheme = lightColorScheme(
     //TEXT
     onSecondary = Color(0xFF047A6F),
     onTertiary = Color.White,
+
+
+    */
+
 
     /* Other default colors to override
     background = Color(0xFFFFFBFE),

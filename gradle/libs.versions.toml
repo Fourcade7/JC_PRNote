@@ -36,6 +36,7 @@ pr-datastore-dep = { module="androidx.datastore:datastore-preferences",version.r
 pr-room-dep = {module="androidx.room:room-runtime",version.ref="room_version"}
 pr-room-an_processor_cmpiler = {module = "androidx.room:room-compiler",version.ref="room_version"}
 pr-room-kapt = {module = "androidx.room:room-compiler",version.ref="room_version"}
+pr-room-ktx = {module="androidx.room:room-ktx",version.ref="room_version"}
 
 
 [plugins]

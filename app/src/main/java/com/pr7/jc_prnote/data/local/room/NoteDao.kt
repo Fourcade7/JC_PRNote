@@ -1,25 +1,28 @@
 package com.pr7.jc_prnote.data.local.room
 
-import androidx.lifecycle.LiveData
 import androidx.room.Dao
 import androidx.room.Delete
 import androidx.room.Insert
 import androidx.room.OnConflictStrategy
 import androidx.room.Query
 import androidx.room.Update
+import kotlinx.coroutines.flow.Flow
 
 
 @Dao
 interface NoteDao {
     @Query("SELECT * FROM Note")
-    fun getAllNotes(): LiveData<List<Note>>
+    fun getAllNotes(): Flow<List<Note>> //Dao functions that have a suspend modifier must not return a deferred/async type (kotlinx.coroutines.flow.Flow). Most probably this is an error. Consider changing the return type or removing the suspend modifier.
     @Insert(onConflict = OnConflictStrategy.REPLACE)
-    fun insertNote(note: Note)
+    suspend fun insertNote(note: Note)
     @Update
-    fun updateNote(note: Note)
+    suspend fun updateNote(note: Note)
     @Delete
-    fun deleteNote(note: Note)
+    suspend fun deleteNote(note: Note)
     @Query("DELETE FROM Note")
-    fun deleteAllNotes()
+    suspend fun deleteAllNotes()
+
+//    @Query("DELETE FROM myTableName")
+//    fun nukeTable()
 
 }

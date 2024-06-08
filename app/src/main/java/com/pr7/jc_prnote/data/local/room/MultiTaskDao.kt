@@ -7,19 +7,20 @@ import androidx.room.Insert
 import androidx.room.OnConflictStrategy
 import androidx.room.Query
 import androidx.room.Update
+import kotlinx.coroutines.flow.Flow
 
 
 @Dao
 interface MultiTaskDao {
     @Query("SELECT * FROM MultiTask")
-    fun getAllMultiTasks(): LiveData<List<MultiTask>>
+    fun getAllMultiTasks(): Flow<List<MultiTask>>
     @Insert(onConflict = OnConflictStrategy.REPLACE)
-    fun insertMultiTask(multiTask: MultiTask)
+    suspend fun insertMultiTask(multiTask: MultiTask)
     @Update
-    fun updateMultiTask(multiTask: MultiTask)
+    suspend fun updateMultiTask(multiTask: MultiTask)
     @Delete
-    fun deleteMultiTask(multiTask: MultiTask)
+    suspend fun deleteMultiTask(multiTask: MultiTask)
     @Query("DELETE FROM MultiTask")
-    fun deleteAllMultiTasks()
+    suspend fun deleteAllMultiTasks()
 
 }

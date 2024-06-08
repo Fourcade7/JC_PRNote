@@ -79,6 +79,9 @@ dependencies {
     implementation(libs.pr.room.dep)
     annotationProcessor(libs.pr.room.an.processor.cmpiler)
 
+    // optional - Kotlin Extensions and Coroutines support for Room
+    implementation(libs.pr.room.ktx)
+
     kapt(libs.pr.room.kapt)
 
 
