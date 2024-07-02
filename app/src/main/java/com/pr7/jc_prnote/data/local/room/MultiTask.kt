@@ -4,10 +4,10 @@ import android.os.Parcelable
 import androidx.room.ColumnInfo
 import androidx.room.Entity
 import androidx.room.PrimaryKey
-import kotlinx.parcelize.Parcelize
+import kotlinx.serialization.Serializable
 
 
-@Parcelize()
+@Serializable
 @Entity(tableName = "MultiTask")
 class MultiTask constructor(
     @PrimaryKey(autoGenerate = true)
@@ -21,4 +21,4 @@ class MultiTask constructor(
     val key:String?=null,
     @ColumnInfo(name = "status")
     val status:Boolean=false,
-): Parcelable
+)

@@ -16,7 +16,7 @@ class MyApp constructor():Application(){
 
         db= Room.databaseBuilder(
             CONTEXT,
-            AppDatabase::class.java, "note0001"
+            AppDatabase::class.java, "n1"
         ).allowMainThreadQueries().build()
         //db.clearAllTables()
 

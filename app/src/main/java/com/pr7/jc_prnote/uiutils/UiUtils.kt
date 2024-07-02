@@ -11,19 +11,31 @@ import androidx.compose.foundation.isSystemInDarkTheme
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
+
+
+import androidx.compose.foundation.layout.IntrinsicSize
 import androidx.compose.foundation.layout.PaddingValues
+import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.Spacer
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.height
+import androidx.compose.foundation.layout.padding
+import androidx.compose.foundation.layout.requiredWidth
 import androidx.compose.foundation.layout.size
 import androidx.compose.foundation.layout.width
+import androidx.compose.foundation.layout.wrapContentWidth
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.foundation.text.BasicTextField
 import androidx.compose.foundation.text.KeyboardOptions
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.filled.Add
 import androidx.compose.material.icons.filled.Check
+import androidx.compose.material.icons.outlined.Delete
+import androidx.compose.material.icons.outlined.Edit
+import androidx.compose.material3.Divider
+import androidx.compose.material3.DropdownMenu
+import androidx.compose.material3.DropdownMenuItem
 import androidx.compose.material3.ExperimentalMaterial3Api
 import androidx.compose.material3.ExtendedFloatingActionButton
 import androidx.compose.material3.Icon
@@ -36,6 +48,7 @@ import androidx.compose.material3.OutlinedTextFieldDefaults
 import androidx.compose.material3.Surface
 import androidx.compose.material3.Text
 import androidx.compose.material3.TextFieldDefaults
+
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.getValue
@@ -44,13 +57,16 @@ import androidx.compose.runtime.remember
 import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
+import androidx.compose.ui.draw.clip
 import androidx.compose.ui.focus.FocusRequester
 import androidx.compose.ui.focus.focusRequester
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.graphics.SolidColor
+import androidx.compose.ui.graphics.vector.ImageVector
 import androidx.compose.ui.platform.LocalFocusManager
 import androidx.compose.ui.platform.LocalSoftwareKeyboardController
 import androidx.compose.ui.res.painterResource
+import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.text.TextStyle
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.text.input.KeyboardType
@@ -58,6 +74,7 @@ import androidx.compose.ui.text.input.VisualTransformation
 import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.text.style.TextDecoration
 import androidx.compose.ui.text.style.TextOverflow
+import androidx.compose.ui.unit.DpOffset
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import com.pr7.jc_prnote.R
@@ -147,7 +164,7 @@ fun CustomBasicTextFieldMulti(
             singleLine = true,
             enabled = true,
             visualTransformation = VisualTransformation.None,
-            placeholder = { Text(text = "Элемент списка") },
+            placeholder = { Text(text = stringResource(id = R.string.listitem))},
             interactionSource = interactionSource,
             // change the start padding
             contentPadding = PaddingValues(horizontal = 10.dp, vertical = 3.dp),
@@ -156,7 +173,6 @@ fun CustomBasicTextFieldMulti(
                 unfocusedIndicatorColor = Color.Transparent
             ),
             shape = RoundedCornerShape(12.dp),
-
             )
     }
 
@@ -174,8 +190,7 @@ fun CustomBasicTextFieldDescription(
 
     //for color change with material
     val localStyle = LocalTextStyle.current
-    val mergedStyle =
-        localStyle.merge(TextStyle(color = LocalContentColor.current, fontSize = 15.sp))
+    val mergedStyle = localStyle.merge(TextStyle(color = LocalContentColor.current, fontSize = 15.sp))
     //for color change with material
 
     val keyboardController = LocalSoftwareKeyboardController.current
@@ -222,7 +237,7 @@ fun CustomBasicTextFieldDescription(
             placeholder = {
 
                 Text(
-                    text = if (checkError) "Вы не пишете описание?" else "Описание",
+                    text = if (checkError) stringResource(id = R.string.deswrite) else stringResource(id = R.string.description),
                     color = if (checkError) Color.Red else MaterialTheme.colorScheme.onSecondary
                 )
             },
@@ -289,8 +304,7 @@ fun CustomBasicTextFieldWithIcon(
 
     //for color change with material
     val localStyle = LocalTextStyle.current
-    val mergedStyle =
-        localStyle.merge(TextStyle(color = LocalContentColor.current, fontSize = 15.sp))
+    val mergedStyle = localStyle.merge(TextStyle(color = LocalContentColor.current, fontSize = 15.sp))
     //for color change with material
 
     val keyboardController = LocalSoftwareKeyboardController.current
@@ -311,7 +325,6 @@ fun CustomBasicTextFieldWithIcon(
             cursorBrush = SolidColor(MaterialTheme.colorScheme.primary),
             modifier = Modifier
                 .fillMaxWidth()
-
                 .background(
                     color = Color.Transparent,
                     shape = RoundedCornerShape(28.dp)
@@ -335,7 +348,7 @@ fun CustomBasicTextFieldWithIcon(
                 visualTransformation = VisualTransformation.None,
                 placeholder = {
                     Text(
-                        text = if (checkError) "Напишите что-нибудь здесь" else "Заголовок",
+                        text = if (checkError) stringResource(id = R.string.titwrite) else stringResource(id =R.string.title),
                         color = if (checkError) Color.Red else MaterialTheme.colorScheme.onSecondary
                     )
                 },
@@ -374,9 +387,8 @@ fun CustomBasicTextFieldWithIcon(
                 colors = TextFieldDefaults.colors(
                     focusedIndicatorColor = Color.Transparent,
                     unfocusedIndicatorColor = Color.Transparent,
-                    errorIndicatorColor = Color.Transparent,
-
-                    //focusedTextColor = MaterialTheme.colorScheme.onPrimary,
+                    focusedContainerColor = MaterialTheme.colorScheme.surfaceVariant,
+                    unfocusedContainerColor = MaterialTheme.colorScheme.surfaceVariant,
                 ),
                 shape = RoundedCornerShape(15.dp),
             )
@@ -426,7 +438,7 @@ fun BasicTextFieldSearchCustom(
             modifier = Modifier
                 .fillMaxWidth()
                 .background(
-                    color = Color.Transparent,
+                    color = MaterialTheme.colorScheme.surfaceVariant,
                     shape = RoundedCornerShape(28.dp)
                 )
                 .focusRequester(focusRequester),
@@ -445,7 +457,7 @@ fun BasicTextFieldSearchCustom(
                 singleLine = true,
                 enabled = true,
                 visualTransformation = VisualTransformation.None,
-                placeholder = { Text(text = "Поиск...") },
+                placeholder = { Text(text = stringResource(id = R.string.search)) },
                 interactionSource = interactionSource,
                 leadingIcon = {
                     IconButton(onClick = { /*TODO*/ }) {
@@ -476,6 +488,7 @@ fun BasicTextFieldSearchCustom(
                     focusedIndicatorColor = Color.Transparent,
                     unfocusedIndicatorColor = Color.Transparent,
                     //focusedTextColor = MaterialTheme.colorScheme.onPrimary,
+                    //focusedContainerColor =MaterialTheme.colorScheme.secondaryContainer,
                 ),
                 shape = RoundedCornerShape(15.dp),
             )
@@ -555,6 +568,7 @@ fun SmallText(
     textAlign: TextAlign = TextAlign.Start,
     textDecoration: TextDecoration = TextDecoration.None,
     color: Color = if (isSystemInDarkTheme()) BackgroundDarkerChild else BackgroundDarker,
+    modifier: Modifier=Modifier
 ) {
     Text(
         text = text,
@@ -563,7 +577,8 @@ fun SmallText(
         textDecoration = textDecoration,
         color =  color,
         maxLines = 1,
-        overflow = TextOverflow.Ellipsis
+        overflow = TextOverflow.Ellipsis,
+        modifier = modifier
     )
 }
 
@@ -597,7 +612,7 @@ fun CustomButton(text: String, clickable: () -> Unit) {
             .fillMaxWidth()
             .height(54.dp),
         shape = RoundedCornerShape(15.dp),
-        color = Purple40,
+        color = BackgroundDarker,
         onClick = {
             clickable.invoke()
         }
@@ -623,12 +638,13 @@ fun ExtendedFAB(
     text: String,
     background: Color = BackgroundDarker,
     textColor: Color = BackgroundDarkerChild,
-    onClick: () -> Unit
+    icon:ImageVector,
+    onClick: () -> Unit,
 ) {
     ExtendedFloatingActionButton(
         modifier = modifier,
         onClick = { onClick() },
-        icon = { Icon(Icons.Filled.Add, "Extended floating action button.") },
+        icon = { Icon(imageVector = icon, "Extended floating action button.") },
         text = { Text(text = text) },
         containerColor = background,
         contentColor = textColor
@@ -673,13 +689,17 @@ fun CircularCheckbox(
 }
 
 @Composable
-fun CustomIcon(image: Int, color: Color = if (isSystemInDarkTheme()) BackgroundDarkerChild else BackgroundDarker) {
+fun CustomIcon(image: Int, color: Color = if (isSystemInDarkTheme()) BackgroundDarkerChild else BackgroundDarker,onClick: () -> Unit = {}) {
 
     Icon(
         painter = painterResource(id = image),
         contentDescription = "",
-        modifier = Modifier.size(20.dp),
-        tint = color
+        tint = color,
+        modifier = Modifier
+            .size(20.dp)
+            .clickable {
+                onClick.invoke()
+            }
     )
 }
 
@@ -744,6 +764,92 @@ fun CustomTextField(
 
     )
 
+}
+
+
+@Composable
+fun DropdownMenuPopup(
+    expandDialog:Boolean=false
+) {
+    var expanded by remember { mutableStateOf(expandDialog) }
+    //DIALOG
+    if (expanded) {
+        MaterialTheme(shapes = MaterialTheme.shapes.copy(extraSmall = RoundedCornerShape(16.dp))) {
+            DropdownMenu(
+                expanded = expandDialog,
+                onDismissRequest = { expanded = false },
+                offset = DpOffset(x = (50).dp, y = (-40).dp),
+                modifier = Modifier
+                    .background(Color(0xFFE9E1F1))
+                    .clip(RoundedCornerShape(16.dp))
+            ) {
+
+
+                DropdownMenuItem(
+                    text = {
+                        Row(
+                            modifier = Modifier.fillMaxSize(),
+                            verticalAlignment = Alignment.CenterVertically
+                        ) {
+
+                            Icon(
+                                imageVector = Icons.Outlined.Edit,
+                                contentDescription = "search",
+                                modifier = Modifier
+                                    .size(35.dp)
+                                    .padding(5.dp),
+                                //tint =  EditButtonColor
+                            )
+                            Spacer(modifier = Modifier.width(10.dp))
+                            Text(
+                                text = "Редактировать",
+
+                                fontSize = 13.sp,
+                                maxLines = 1,
+                                overflow = TextOverflow.Ellipsis,
+                                color = MaterialTheme.colorScheme.tertiary,
+                            )
+                        }
+                    },
+                    onClick = {
+                        expanded = false
+                    }
+                )
+                Divider()
+                DropdownMenuItem(
+                    text = {
+                        Row(
+                            modifier = Modifier.fillMaxSize(),
+                            verticalAlignment = Alignment.CenterVertically
+                        ) {
+
+                            Icon(
+                                imageVector = Icons.Outlined.Delete,
+                                contentDescription = "search",
+                                modifier = Modifier
+                                    .size(35.dp)
+                                    .padding(5.dp),
+                                tint = Color.Red
+                            )
+                            Spacer(modifier = Modifier.width(10.dp))
+                            Text(
+                                text = "Удалить",
+                                fontSize = 13.sp,
+                                maxLines = 1,
+                                overflow = TextOverflow.Ellipsis,
+                                color = MaterialTheme.colorScheme.tertiary,
+                            )
+                        }
+                    },
+                    onClick = {
+
+                    }
+                )
+            }
+        }
+    }
+
+    //DOALOG
 }
 
 

@@ -1,11 +1,14 @@
 package com.pr7.jc_prnote.ui.screens.splash
 
+import ONBOARDING
+import SharedPrefManager
 import androidx.compose.animation.core.animateFloatAsState
 import androidx.compose.animation.core.tween
 import androidx.compose.foundation.background
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.fillMaxSize
+import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.size
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.filled.Email
@@ -23,10 +26,15 @@ import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.alpha
 import androidx.compose.ui.graphics.Color
+import androidx.compose.ui.res.painterResource
+import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.unit.dp
+import androidx.compose.ui.unit.sp
 import androidx.navigation.NavHostController
+import com.pr7.jc_prnote.R
 import com.pr7.jc_prnote.ui.navigation.Screens
 import com.pr7.jc_prnote.ui.screens.main.theme.JC_PRNoteTheme
+import com.pr7.jc_prnote.uiutils.SpacerStd
 import kotlinx.coroutines.delay
 
 
@@ -40,29 +48,48 @@ fun SplashScreen(navHostController: NavHostController) {
             durationMillis = 3000
         ), label = ""
     )
+    val onboarding = SharedPrefManager.loadBoolean(ONBOARDING)
 
     LaunchedEffect(key1 = true) {
         startAnimation=true
         delay(4000)
         navHostController.popBackStack()
-        navHostController.navigate(Screens.OnBoard.route)
+
+        if (onboarding){
+            navHostController.navigate(Screens.Home)
+        }else{
+            navHostController.navigate(Screens.OnBoard.route)
+        }
+
     }
     
    JC_PRNoteTheme(darkTheme = false) {
        Column(
-           modifier=Modifier.fillMaxSize().background(MaterialTheme.colorScheme.primary),
+           modifier=Modifier.fillMaxSize(),
            verticalArrangement = Arrangement.Center,
            horizontalAlignment = Alignment.CenterHorizontally
        ) {
            Icon(
-               imageVector = Icons.Default.Email,
+               painter = painterResource(id =R.drawable.notebook),
                contentDescription = "D",
-               tint = Color.Blue,
+               tint = Color.White,
                modifier = Modifier
                    .size(120.dp)
                    .alpha(alpha = animFloat)
            )
-           Text(text = "Splash Screen")
+           SpacerStd(height = 10)
+           Text(
+               text = stringResource(id = R.string.app_name),
+               fontSize = 20.sp,
+
+
+           )
+           Text(
+               text = stringResource(id = R.string.discipline),
+               modifier = Modifier
+                   .background(Color.Red)
+                   .padding(horizontal = 10.dp)
+           )
        }
    }
 }

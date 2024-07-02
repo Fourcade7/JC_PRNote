@@ -23,4 +23,7 @@ interface MultiTaskDao {
     @Query("DELETE FROM MultiTask")
     suspend fun deleteAllMultiTasks()
 
+    @Query("SELECT * FROM MultiTask WHERE id=:id ")
+    fun getById(id: Int): Flow<MultiTask?>
+
 }

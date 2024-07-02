@@ -2,6 +2,7 @@
 
 package com.pr7.jc_prnote.ui.screens.onboarding
 
+import ONBOARDING
 import android.app.Activity
 import android.content.Intent
 import androidx.compose.foundation.ExperimentalFoundationApi
@@ -26,6 +27,7 @@ import androidx.compose.ui.Modifier
 import androidx.compose.ui.layout.ContentScale
 import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.res.painterResource
+import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.unit.dp
 import androidx.navigation.NavHostController
@@ -92,7 +94,7 @@ fun OnBoardingMainScreen(navHostController: NavHostController) {
 
         CustomButton(
 
-            text = if (pagerState.currentPage == 2) "Начинать" else "Следующий"
+            text = if (pagerState.currentPage == 2) stringResource(id = R.string.start) else stringResource(id = R.string.next)
         ){
             scope.launch {
                 pagerState.animateScrollToPage(
@@ -101,12 +103,12 @@ fun OnBoardingMainScreen(navHostController: NavHostController) {
             }
 
             if (pagerState.currentPage==2){
-
+                SharedPrefManager.saveBoolean(ONBOARDING, true)
                 navHostController.popBackStack()
-                navHostController.navigate(Screens.Home.route)
+                navHostController.navigate(Screens.Home)
 //                context.startActivity(Intent(context, MainActivity::class.java))
-//                SharedPrefManager.saveBoolean(ONBOARDING, true)
-//                context.finish()
+
+                //context.finish()
             }
         }
 
@@ -130,14 +132,14 @@ fun OnboardingScreen(pagerState: PagerState) {
         R.drawable.onboard3
     )
     val desc = arrayOf(
-        "Управляйте своими задачами",
-        "Создайте распорядок дня",
-        "Организуйте свои задачи"
+        stringResource(id = R.string.dest1),
+        stringResource(id = R.string.dest2),
+        stringResource(id = R.string.dest3),
     )
     val desc2 = arrayOf(
-        "Вы можете легко и бесплатно управлять всеми своими повседневными задачами.",
-        "Создать свой индивидуальный распорядок дня, чтобы оставаться продуктивным.",
-        "Вы можете упорядочить свои ежедневные задачи, добавив задачи в отдельные категории."
+        stringResource(id = R.string.desd1),
+        stringResource(id = R.string.desd2),
+        stringResource(id = R.string.desd3),
     )
 
     HorizontalPager(state = pagerState) { page: Int ->

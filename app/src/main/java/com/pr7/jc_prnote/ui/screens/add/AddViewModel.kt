@@ -18,6 +18,8 @@ class AddViewModel constructor():ViewModel() {
 
     //var allNotesList:List<Note> by mutableStateOf(listOf())
 
+    var getByIdNote:Note? by mutableStateOf(Note())
+
     fun addNote(note: Note)=viewModelScope.launch{
         noteDao.insertNote(note=note)
     }
@@ -37,6 +39,12 @@ class AddViewModel constructor():ViewModel() {
             )
         }
 
+    }
+
+    fun getById(id:Int)=viewModelScope.launch{
+        noteDao.getById(id).collect{
+            getByIdNote=it
+        }
     }
 
 //    fun getAllNote()=viewModelScope.launch(Dispatchers.IO) {

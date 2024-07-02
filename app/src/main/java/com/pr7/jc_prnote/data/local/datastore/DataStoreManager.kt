@@ -15,7 +15,8 @@ import kotlinx.coroutines.flow.map
 private val Context.dataStore: DataStore<Preferences> by preferencesDataStore(name = "settings")
 
 
-const val SENDED="Sended"
+const val THEME="Theme"
+const val LANGGG="Langgg"
 
 class DataStoreManager constructor(val context: Context) {
 
@@ -62,12 +63,12 @@ class DataStoreManager constructor(val context: Context) {
             settings[datastorekey]=value
         }
     }
-   fun loadBoolean(key:String): Flow<Boolean?> {
+   fun loadBoolean(key:String): Flow<Boolean> {
         val datastorekey= booleanPreferencesKey(key)
-        val flow: Flow<Boolean?> =context.dataStore.data
+        val flow: Flow<Boolean> =context.dataStore.data
             .map { preferences ->
                 // No type safety.
-                preferences[datastorekey]
+                preferences[datastorekey]?:true
             }
 
         return flow

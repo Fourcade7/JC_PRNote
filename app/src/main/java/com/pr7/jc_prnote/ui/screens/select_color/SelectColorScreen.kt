@@ -22,12 +22,14 @@ import androidx.compose.ui.draw.clip
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.unit.dp
 import androidx.core.graphics.toColorInt
+import com.pr7.jc_prnote.data.local.room.Note
 import kotlin.random.Random
 
 
 @SuppressLint("MutableCollectionMutableState")
 @Composable
 fun SelectColorScreen(
+    note: Note?=null,
     sendSelectedColor:(String)->Unit
 ) {
 
@@ -46,7 +48,7 @@ fun SelectColorScreen(
     }
 
     var selectedColor by remember{
-        mutableStateOf<String?>(null)
+        mutableStateOf<String?>(note?.backgroundColor)
     }
 
 //    (1..20).map {

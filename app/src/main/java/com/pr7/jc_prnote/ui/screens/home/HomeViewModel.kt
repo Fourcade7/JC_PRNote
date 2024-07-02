@@ -18,10 +18,12 @@ class HomeViewModel constructor():ViewModel() {
 
     var allNotesList:List<Note> by mutableStateOf(listOf())
     var allMultiTaskList:List<MultiTask> by mutableStateOf(listOf())
+    var getByIdNote:Note? by mutableStateOf(Note())
 
     init {
         getAllNote()
         getAllMultiTask()
+        //getById(1)
 
     }
 
@@ -34,6 +36,16 @@ class HomeViewModel constructor():ViewModel() {
     fun getAllMultiTask()=viewModelScope.launch{
         multiTaskDao.getAllMultiTasks().collect{
             allMultiTaskList=it
+        }
+    }
+
+    fun updateMultitask(multiTask: MultiTask)=viewModelScope.launch{
+        multiTaskDao.updateMultiTask(multiTask)
+    }
+
+    fun getById(id:Int)=viewModelScope.launch{
+        noteDao.getById(id).collect{
+            getByIdNote=it
         }
     }
     fun addNote(note: Note)=viewModelScope.launch{

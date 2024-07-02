@@ -1,18 +1,20 @@
+<?xml version="1.0" encoding="utf-8"?>
 <resources>
-    <string name="app_name">PR Note</string>
+
     <string name="addnewtask">Add</string>
+    <string name="app_name">PR Note</string>
     <string name="settings">Settings</string>
     <string name="themes">Themes</string>
     <string name="changelang">Change Language</string>
     <string name="addtask">Add new task</string>
     <string name="description">Description</string>
-    <string name="deswrite">Description Write</string>
+    <string name="deswrite">You don\'t write a description?</string>
     <string name="title">Title</string>
     <string name="titwrite">Write something here</string>
     <string name="addlist">Add List</string>
     <string name="first">First</string>
     <string name="second">Second</string>
-    <string name="listitem">List item</string>
+    <string name="listitem">List Item</string>
     <string name="additionalsettings">Additional settings</string>
     <string name="selectcategory">Select a category</string>
     <string name="selectdates">Select dates</string>

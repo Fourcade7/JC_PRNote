@@ -9,9 +9,11 @@ lifecycleRuntimeKtx = "2.8.1"
 activityCompose = "1.9.0"
 composeBom = "2023.08.00"
 
-nav_version="2.7.7"
+nav_version="2.8.0-alpha08"
 datastore_version="1.1.1"
 room_version = "2.6.1"
+serialization_json_version="1.6.3"
+appcompat_version = "1.7.0"
 
 
 [libraries]
@@ -30,7 +32,6 @@ androidx-ui-test-manifest = { group = "androidx.compose.ui", name = "ui-test-man
 androidx-ui-test-junit4 = { group = "androidx.compose.ui", name = "ui-test-junit4" }
 androidx-material3 = { group = "androidx.compose.material3", name = "material3" }
 
-pr-nav-dep ={module ="androidx.navigation:navigation-compose", version.ref="nav_version"}
 pr-datastore-dep = { module="androidx.datastore:datastore-preferences",version.ref="datastore_version"}
 #ROOM
 pr-room-dep = {module="androidx.room:room-runtime",version.ref="room_version"}
@@ -38,8 +39,16 @@ pr-room-an_processor_cmpiler = {module = "androidx.room:room-compiler",version.r
 pr-room-kapt = {module = "androidx.room:room-compiler",version.ref="room_version"}
 pr-room-ktx = {module="androidx.room:room-ktx",version.ref="room_version"}
 
+pr-nav-dep ={module ="androidx.navigation:navigation-compose", version.ref="nav_version"}
+#for type-safe navigation
+pr-ktx-serialization-json-dep = {module="org.jetbrains.kotlinx:kotlinx-serialization-json",version.ref="serialization_json_version"}
+
+pr-appcompat-dep={module="androidx.appcompat:appcompat",version.ref="appcompat_version"}
+
 
 [plugins]
 android-application = { id = "com.android.application", version.ref = "agp" }
 jetbrains-kotlin-android = { id = "org.jetbrains.kotlin.android", version.ref = "kotlin" }
 
+#for type-safe navigation
+pr-ktx-serialization-dep = {id="org.jetbrains.kotlin.plugin.serialization",version.ref="kotlin"}

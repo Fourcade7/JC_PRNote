@@ -2,9 +2,10 @@ plugins {
     alias(libs.plugins.android.application)
     alias(libs.plugins.jetbrains.kotlin.android)
 
+    alias(libs.plugins.pr.ktx.serialization.dep)
 
     kotlin("kapt")
-    id("kotlin-parcelize")
+    //id("kotlin-parcelize")
 
     //id("com.google.devtools.ksp")
 }
@@ -17,8 +18,8 @@ android {
         applicationId = "com.pr7.jc_prnote"
         minSdk = 28
         targetSdk = 34
-        versionCode = 1
-        versionName = "1.0"
+        versionCode = 3
+        versionName = "1.3"
 
         testInstrumentationRunner = "androidx.test.runner.AndroidJUnitRunner"
         vectorDrawables {
@@ -82,7 +83,12 @@ dependencies {
     // optional - Kotlin Extensions and Coroutines support for Room
     implementation(libs.pr.room.ktx)
 
+    //type-safe
+    implementation(libs.pr.ktx.serialization.json.dep)
+
     kapt(libs.pr.room.kapt)
+
+    implementation(libs.pr.appcompat.dep)
 
 
 

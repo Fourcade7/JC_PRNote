@@ -2,11 +2,9 @@
     ExperimentalMaterial3Api::class
 )
 
-package com.pr7.jc_prnote.ui.screens.add
+package com.pr7.jc_prnote.ui.screens.update
 
 import android.annotation.SuppressLint
-import android.content.res.Resources
-import android.provider.Settings.Global.getString
 import android.util.Log
 import androidx.compose.animation.AnimatedVisibility
 import androidx.compose.animation.expandVertically
@@ -31,9 +29,9 @@ import androidx.compose.foundation.lazy.items
 import androidx.compose.foundation.rememberScrollState
 import androidx.compose.foundation.verticalScroll
 import androidx.compose.material.icons.Icons
-import androidx.compose.material.icons.filled.Add
 import androidx.compose.material.icons.filled.Close
 import androidx.compose.material.icons.filled.Done
+import androidx.compose.material.icons.filled.Edit
 import androidx.compose.material3.ButtonDefaults
 import androidx.compose.material3.Card
 import androidx.compose.material3.CardDefaults
@@ -51,6 +49,7 @@ import androidx.compose.material3.SwitchDefaults
 import androidx.compose.material3.TextButton
 import androidx.compose.material3.rememberDatePickerState
 import androidx.compose.runtime.Composable
+import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
@@ -71,6 +70,8 @@ import com.pr7.jc_prnote.data.local.room.TAG
 import com.pr7.jc_prnote.data.model.Category
 import com.pr7.jc_prnote.data.model.Priority
 import com.pr7.jc_prnote.ui.navigation.Screens
+import com.pr7.jc_prnote.ui.screens.add.AddViewModel
+import com.pr7.jc_prnote.ui.screens.add.convertMillisToDate
 import com.pr7.jc_prnote.ui.screens.main.theme.BackgroundDarker
 import com.pr7.jc_prnote.ui.screens.main.theme.BackgroundDarkerChild
 import com.pr7.jc_prnote.ui.screens.select_color.SelectColorScreen
@@ -86,29 +87,30 @@ import java.util.Calendar
 
 
 @Composable
-fun AddScreen(
+fun UpdateScreen(
     navHostController: NavHostController,
-    addViewModel: AddViewModel
+    updateViewModel: UpdateViewModel,
+    note: Note
 ) {
 
     var mainTitle by remember {
-        mutableStateOf("")
+        mutableStateOf(note.title.toString())
     }
     var descriptionTitle by remember {
-        mutableStateOf("")
+        mutableStateOf(note.description.toString())
     }
 
     var selectedCategoryName by remember {
-        mutableStateOf<String?>(null)
+        mutableStateOf<String?>(note.category)
     }
     var selectedPriorityName by remember {
-        mutableStateOf<String?>(null)
+        mutableStateOf<String?>(note.priority)
     }
     var selectedDate by remember {
-        mutableStateOf<String?>(null)
+        mutableStateOf<String?>(note.dataTime2)
     }
     var selectedColor by remember {
-        mutableStateOf<String?>(null)
+        mutableStateOf<String?>(note.backgroundColor)
     }
 
     var isErrorEmptyTitle by remember {
@@ -122,9 +124,13 @@ fun AddScreen(
         mutableStateOf(convertMillisToDateWithClock(System.currentTimeMillis()))
     }
 
-    var mList by remember {
-        mutableStateOf(listOf<String>())
-    }
+//    var uplist=updateViewModel.allMultiTaskList.map {
+//        it.title
+//    }
+//
+//    var mList by remember {
+//        mutableStateOf(uplist)
+//    }
 
 
     Box(
@@ -138,7 +144,7 @@ fun AddScreen(
                 .padding(bottom = 50.dp)
                 .verticalScroll(rememberScrollState())
         ) {
-            LargeTextSemiBold(text = stringResource(id = R.string.addtask))
+            LargeTextSemiBold(text = stringResource(id = R.string.edittask))
             SpacerStd(height = 10)
 
             CustomBasicTextFieldWithIcon(name = mainTitle, checkError = isErrorEmptyTitle) {
@@ -152,9 +158,10 @@ fun AddScreen(
                 descriptionTitle = it
             }
             //SpacerStd(height = 10)
-            AddMultiTask(addViewModel = addViewModel) { mList = it }
+            AddMultiTask(note = note,updateViewModel = updateViewModel) //{ mList = it }
             Divider()
             AdditionalSettings(
+                note=note,
                 selectedCategoryTitle = { selectedCategoryName = it },
                 selectedPriorityTitle = { selectedPriorityName = it },
                 sendSelectedDate = { selectedDate = it },
@@ -165,32 +172,26 @@ fun AddScreen(
 
         ExtendedFAB(
             modifier = Modifier.align(Alignment.BottomEnd),
-            text = stringResource(id = R.string.addnewtask),
-            icon = Icons.Filled.Add
+            text = stringResource(id = R.string.edittask),
+            icon = Icons.Filled.Edit
         ) {
             //ADD to Database
             if (mainTitle.isNotEmpty() && descriptionTitle.isNotEmpty()) {
-                val key = System.currentTimeMillis().toString()
-                addViewModel.addNote(
+                //val key = System.currentTimeMillis().toString()
+                updateViewModel.updateNote(
                     note = Note(
+                        uid = note.uid,
                         title = mainTitle,
                         description = descriptionTitle,
                         category = selectedCategoryName,
                         priority = selectedPriorityName,
-                        key = key,
+                        key = note.key,
                         dataTime = today,
                         dataTime2 = selectedDate,
                         backgroundColor = selectedColor,
 
                         )
                 )
-                if (mList.isNotEmpty()) {
-                    addViewModel.addMultiTask(
-                        category = selectedCategoryName ?: "All",
-                        key = key,
-                        list = mList
-                    )
-                }
                 navHostController.popBackStack()
 
             } else {
@@ -213,32 +214,45 @@ fun AddScreen(
 @SuppressLint("MutableCollectionMutableState")
 @Composable
 private fun AddMultiTask(
-    addViewModel: AddViewModel,
-    mTList: (List<String>) -> Unit
+    note: Note,
+    updateViewModel: UpdateViewModel,
+    //mTList: (List<String>) -> Unit
 ) {
 
     val focusManager = LocalFocusManager.current
-    var switcher by remember {
-        mutableStateOf(false)
-    }
-    var openSettings by remember {
-        mutableStateOf(false)
-    }
+
     var multiTaskTitle by remember {
         mutableStateOf("")
     }
 
-    val f= stringResource(id = R.string.first)
-    val s= stringResource(id = R.string.second)
+    //Log.d(TAG, "AddMultiTask: ${updateViewModel.allMultiTaskList}")
     var multitasksList by remember {
-        mutableStateOf(
-            mutableListOf(
-                f,
-                s,
-            )
-        )
+        mutableStateOf(updateViewModel.allMultiTaskList.filter {
+            note.key==it.key
+        })
     }
-    val mlist = mutableListOf<String>()
+    ////.map { it.title.toString() }
+
+    var mlist by remember {
+       mutableStateOf( mutableListOf<MultiTask>())
+        
+    }
+    LaunchedEffect (key1 = Unit){
+            //mlist= mlist.apply{addAll(multitasksList)}
+           //mlist= mutableListOf<String>().apply { addAll(multitasksList) }
+            mlist=multitasksList.toMutableList()
+    }
+
+    var switcher by remember {
+        mutableStateOf(multitasksList.size>0)
+    }
+    var openSettings by remember {
+        mutableStateOf(multitasksList.size>0)
+    }
+
+
+
+
 
 
     Column() {
@@ -246,7 +260,7 @@ private fun AddMultiTask(
             modifier = Modifier.fillMaxWidth(),
             verticalAlignment = Alignment.CenterVertically
         ) {
-            SmallText(text = stringResource(id = R.string.addlist), color = MaterialTheme.colorScheme.onSecondary)
+            SmallText(text =  stringResource(id = R.string.addlist), color = MaterialTheme.colorScheme.onSecondary)
             Spacer(modifier = Modifier.weight(1f))
             Switch(
                 colors = SwitchDefaults.colors(
@@ -282,7 +296,7 @@ private fun AddMultiTask(
                             ) {
 
                                 SmallText(
-                                    text = "${index + 1}. $s",
+                                    text = "${index + 1}. ${s.title}",
                                     color = MaterialTheme.colorScheme.onSecondary
                                 )
                                 SpacerStd(width = 3)
@@ -290,9 +304,9 @@ private fun AddMultiTask(
                                     modifier = Modifier.size(20.dp),
                                     onClick = {
                                         mlist.remove(s)
-                                        multitasksList =
-                                            mutableListOf<String>().apply { addAll(mlist) }
-                                        mTList.invoke(multitasksList)
+                                        multitasksList = mutableListOf<MultiTask>().apply { addAll(mlist) }
+                                        //mTList.invoke(multitasksList)
+                                        updateViewModel.deleteMultiTask(s)
                                     }) {
                                     Icon(
                                         imageVector = Icons.Filled.Close,
@@ -313,12 +327,13 @@ private fun AddMultiTask(
                         }
                     }
                     IconButton(onClick = {
-                        mlist.add(multiTaskTitle)
-                        multitasksList = mutableListOf<String>().apply { addAll(mlist) }
+                        val mtask=MultiTask(title = multiTaskTitle, category = note.category, key = note.key)
+                        mlist.add(mtask)
+                        multitasksList = mutableListOf<MultiTask>().apply { addAll(mlist) }
                         multiTaskTitle = ""
 
-                        mTList.invoke(multitasksList)
-
+                        //mTList.invoke(multitasksList)
+                        updateViewModel.addMultiTask(mtask)
 
                     }) {
                         Icon(
@@ -341,6 +356,7 @@ private fun AddMultiTask(
 
 @Composable
 private fun AdditionalSettings(
+    note: Note,
     selectedCategoryTitle: (String) -> Unit,
     selectedPriorityTitle: (String) -> Unit,
     sendSelectedDate: (String) -> Unit,
@@ -348,10 +364,10 @@ private fun AdditionalSettings(
 ) {
     val focusManager = LocalFocusManager.current
     var switcher by remember {
-        mutableStateOf(false)
+        mutableStateOf(if (note.category!=null || note.priority!=null || note.backgroundColor!=null || note.dataTime2!=null) true else false)
     }
     var openSettings by remember {
-        mutableStateOf(false)
+        mutableStateOf(if (note.category!=null || note.priority!=null || note.backgroundColor!=null || note.dataTime2!=null) true else false)
     }
 
 
@@ -393,21 +409,21 @@ private fun AdditionalSettings(
 
                 SmallText(text = stringResource(id = R.string.selectcategory), color = MaterialTheme.colorScheme.tertiary)
                 SpacerStd(height = 1)
-                CategoryScreen { selectedCategoryTitle.invoke(it) }
+                CategoryScreen(note=note) { selectedCategoryTitle.invoke(it) }
                 Divider()
                 SpacerStd(height = 1)
                 SmallText(text = stringResource(id = R.string.selectdates), color = MaterialTheme.colorScheme.tertiary)
-                DateTimeScreen { sendSelectedDate.invoke(it) }
+                DateTimeScreen(note=note) { sendSelectedDate.invoke(it) }
                 Divider()
                 SpacerStd(height = 8)
                 SmallText(text = stringResource(id = R.string.selbgcolor), color = MaterialTheme.colorScheme.tertiary)
                 SpacerStd(height = 8)
-                SelectColorScreen() { sendSelectedColor.invoke(it) }
+                SelectColorScreen(note=note) { sendSelectedColor.invoke(it) }
 
                 SpacerStd(height = 8)
                 Divider()
                 SmallText(text = stringResource(id = R.string.priority), color = MaterialTheme.colorScheme.tertiary)
-                PriorityScreen { selectedPriorityTitle.invoke(it) }
+                PriorityScreen(note=note) { selectedPriorityTitle.invoke(it) }
                 SpacerStd(height = 8)
 
 
@@ -421,32 +437,33 @@ private fun AdditionalSettings(
 
 @Composable
 private fun CategoryScreen(
+    note: Note,
     selectedCategoryName: (String) -> Unit
 ) {
 
     val categorys= listOf(
-                Category(name = stringResource(id = R.string.all), image = R.drawable.all),
-                Category(name = stringResource(id = R.string.work), image = R.drawable.work),
-                Category(name = stringResource(id = R.string.home), image = R.drawable.home),
-                Category(name = stringResource(id = R.string.eat), image = R.drawable.food),
-                Category(name = stringResource(id = R.string.education), image = R.drawable.education),
-                Category(name = stringResource(id = R.string.family), image = R.drawable.family),
-                Category(name = stringResource(id = R.string.money), image = R.drawable.wallet),
-                Category(name = stringResource(id = R.string.debt), image = R.drawable.liability),
-                Category(name = stringResource(id = R.string.health), image = R.drawable.health),
-                Category(name = stringResource(id = R.string.sport), image = R.drawable.sports),
-                Category(name = stringResource(id = R.string.gym), image = R.drawable.gym),
-                Category(name = stringResource(id = R.string.book), image = R.drawable.book),
-                Category(name = stringResource(id = R.string.cloth), image = R.drawable.clothes),
-                Category(name = stringResource(id = R.string.watch), image = R.drawable.watching),
-                Category(name = stringResource(id = R.string.rest), image = R.drawable.sunbed),
-                Category(name = stringResource(id = R.string.car), image = R.drawable.car),
-                Category(name = stringResource(id = R.string.iwillgo), image = R.drawable.direction),
-                Category(name = stringResource(id = R.string.holidays), image = R.drawable.holidays)
-            )
+        Category(name = stringResource(id = R.string.all), image = R.drawable.all),
+        Category(name = stringResource(id = R.string.work), image = R.drawable.work),
+        Category(name = stringResource(id = R.string.home), image = R.drawable.home),
+        Category(name = stringResource(id = R.string.eat), image = R.drawable.food),
+        Category(name = stringResource(id = R.string.education), image = R.drawable.education),
+        Category(name = stringResource(id = R.string.family), image = R.drawable.family),
+        Category(name = stringResource(id = R.string.money), image = R.drawable.wallet),
+        Category(name = stringResource(id = R.string.debt), image = R.drawable.liability),
+        Category(name = stringResource(id = R.string.health), image = R.drawable.health),
+        Category(name = stringResource(id = R.string.sport), image = R.drawable.sports),
+        Category(name = stringResource(id = R.string.gym), image = R.drawable.gym),
+        Category(name = stringResource(id = R.string.book), image = R.drawable.book),
+        Category(name = stringResource(id = R.string.cloth), image = R.drawable.clothes),
+        Category(name = stringResource(id = R.string.watch), image = R.drawable.watching),
+        Category(name = stringResource(id = R.string.rest), image = R.drawable.sunbed),
+        Category(name = stringResource(id = R.string.car), image = R.drawable.car),
+        Category(name = stringResource(id = R.string.iwillgo), image = R.drawable.direction),
+        Category(name = stringResource(id = R.string.holidays), image = R.drawable.holidays)
+    )
 
     var selectedItem by remember {
-        mutableStateOf(Category(name = null, image = R.drawable.all))
+        mutableStateOf(Category(name = note.category.toString(), image = ReturnImageToInt(note.category.toString())))
     }
 
 
@@ -505,21 +522,20 @@ private fun CategoryScreen(
 
 @Composable
 private fun PriorityScreen(
+    note: Note,
     selectedPriorityName: (String) -> Unit
 ) {
 
-    val array =
-        listOf(
-            Priority(name = stringResource(id = R.string.important), image = R.drawable.rocket),
-            Priority(name = stringResource(id = R.string.high), image = R.drawable.bomb),
-            Priority(name = stringResource(id = R.string.medium), image = R.drawable.gauge),
-            Priority(name = stringResource(id = R.string.fromheart), image = R.drawable.convenient),
-        )
-
+    val array = listOf(
+        Priority(name = stringResource(id = R.string.important), image = R.drawable.rocket),
+        Priority(name = stringResource(id = R.string.high), image = R.drawable.bomb),
+        Priority(name = stringResource(id = R.string.medium), image = R.drawable.gauge),
+        Priority(name = stringResource(id = R.string.fromheart), image = R.drawable.convenient),
+    )
 
 
     var selectedItem by remember {
-        mutableStateOf<Priority?>(null)
+        mutableStateOf<Priority?>(Priority(name = note.priority.toString(), ReturnPrImageToInt(note.priority.toString())))
     }
 
     LazyRow(
@@ -579,6 +595,7 @@ private fun PriorityScreen(
 
 @Composable
 private fun DateTimeScreen(
+    note: Note,
     sendSelectedDate: (String) -> Unit
 ) {
     val calendar = Calendar.getInstance()
@@ -589,14 +606,12 @@ private fun DateTimeScreen(
     )
     val datePickerState = rememberDatePickerState(
         initialSelectedDateMillis = calendar.timeInMillis,
-        yearRange = 2020..2025
+        yearRange = 2020..2050
     )
 
     datePickerState.displayMode = DisplayMode.Picker
 
-    val selectedDate = datePickerState.selectedDateMillis?.let {
-        convertMillisToDate(it)
-    } ?: ""
+    val selectedDate = datePickerState.selectedDateMillis?.let { convertMillisToDate(it) } ?: ""
     var showDatePicker by remember { mutableStateOf(false) }
 
 
@@ -618,7 +633,7 @@ private fun DateTimeScreen(
                 tint = MaterialTheme.colorScheme.onSecondary //else MaterialTheme.colorScheme.onSecondary
             )
             SpacerStd(width = 5)
-            SmallText(text = selectedDate, color = MaterialTheme.colorScheme.onSecondary)
+            SmallText(text = note.dataTime2?: selectedDate, color = MaterialTheme.colorScheme.onSecondary)
             //Установите время окончания
         }
     }
@@ -649,7 +664,7 @@ private fun DateTimeScreen(
                     onClick = {
                         showDatePicker = false
                     }
-                ) { SmallText(text = stringResource(id = R.string.cancel), color = MaterialTheme.colorScheme.onSecondary) }
+                ) { SmallText(text = "Отмена", color = MaterialTheme.colorScheme.onSecondary) }
             },
             colors = DatePickerDefaults.colors(
                 containerColor = MaterialTheme.colorScheme.onSurface,
@@ -665,7 +680,7 @@ private fun DateTimeScreen(
 
                     todayContentColor = MaterialTheme.colorScheme.tertiary,
                     todayDateBorderColor = MaterialTheme.colorScheme.tertiary,
-                    selectedDayContentColor = MaterialTheme.colorScheme.onSurface,
+                    selectedDayContentColor = MaterialTheme.colorScheme.onTertiary,
                     dayContentColor = MaterialTheme.colorScheme.tertiary,
                     selectedDayContainerColor = MaterialTheme.colorScheme.onSecondary,
 
@@ -676,4 +691,117 @@ private fun DateTimeScreen(
         }
     }
 
+}
+
+
+
+private fun ReturnImageToInt(
+    imgName: String
+):Int {
+
+
+    val clist =listOf(
+        Category(name = "Все", image = R.drawable.all),
+        Category(name = "Работа", image = R.drawable.work),
+        Category(name = "Дом", image = R.drawable.home),
+        Category(name = "Еда", image = R.drawable.food),
+        Category(name = "Образование", image = R.drawable.education),
+        Category(name = "Семья", image = R.drawable.family),
+        Category(name = "Деньги", image = R.drawable.wallet),
+        Category(name = "Долг", image = R.drawable.liability),
+        Category(name = "Здоровье", image = R.drawable.health),
+        Category(name = "Спорт", image = R.drawable.sports),
+        Category(name = "GYM", image = R.drawable.gym),
+        Category(name = "Книга", image = R.drawable.book),
+        Category(name = "Одежда", image = R.drawable.clothes),
+        Category(name = "Смотреть", image = R.drawable.watching),
+        Category(name = "Отдых", image = R.drawable.sunbed),
+        Category(name = "Машина", image = R.drawable.car),
+        Category(name = "Я пойду", image = R.drawable.direction),
+        Category(name = "Каникулы", image = R.drawable.holidays),
+
+        // ENG
+        Category(name = "All", image = R.drawable.all),
+        Category(name = "Work", image = R.drawable.work),
+        Category(name = "Home", image = R.drawable.home),
+        Category(name = "Еда", image = R.drawable.food),
+        Category(name = "Education", image = R.drawable.education),
+        Category(name = "Family", image = R.drawable.family),
+        Category(name = "Money", image = R.drawable.wallet),
+        Category(name = "Debt", image = R.drawable.liability),
+        Category(name = "Health", image = R.drawable.health),
+        Category(name = "Sport", image = R.drawable.sports),
+        Category(name = "GYM", image = R.drawable.gym),
+        Category(name = "Book", image = R.drawable.book),
+        Category(name = "Cloth", image = R.drawable.clothes),
+        Category(name = "Watch", image = R.drawable.watching),
+        Category(name = "Rest", image = R.drawable.sunbed),
+        Category(name = "Car", image = R.drawable.car),
+        Category(name = "I will go", image = R.drawable.direction),
+        Category(name = "Holidays", image = R.drawable.holidays),
+
+        // UZ
+        Category(name = "Hammasi", image = R.drawable.all),
+        Category(name = "Ish", image = R.drawable.work),
+        Category(name = "Uy", image = R.drawable.home),
+        Category(name = "Ovqat", image = R.drawable.food),
+        Category(name = "Ta'lim", image = R.drawable.education),
+        Category(name = "Oila", image = R.drawable.family),
+        Category(name = "Pul", image = R.drawable.wallet),
+        Category(name = "Qarz", image = R.drawable.liability),
+        Category(name = "Salomatlik", image = R.drawable.health),
+        Category(name = "Sport", image = R.drawable.sports),
+        Category(name = "GYM", image = R.drawable.gym),
+        Category(name = "Kitob", image = R.drawable.book),
+        Category(name = "Kiyim", image = R.drawable.clothes),
+        Category(name = "Ko'rish", image = R.drawable.watching),
+        Category(name = "Dam olish", image = R.drawable.sunbed),
+        Category(name = "Mashina", image = R.drawable.car),
+        Category(name = "Men boraman", image = R.drawable.direction),
+        Category(name = "Bayramlar", image = R.drawable.holidays),
+    )
+    val img= clist.filter {
+        imgName==it.name
+    }
+    try {
+        Log.d(TAG, "ReturnImageToInt: ${img[0]}")
+        return img[0].image!!
+    }catch (e:Exception){
+        Log.d(TAG, "ReturnImageToInt: ${e.message}")
+        return 0
+    }
+}
+
+
+private fun ReturnPrImageToInt(
+    imgName: String
+):Int {
+
+    val array = listOf(
+        Priority(name = "Важное", image = R.drawable.rocket),
+        Priority(name = "Высокий", image = R.drawable.bomb),
+        Priority(name = "Средний", image = R.drawable.gauge),
+        Priority(name = "От души", image = R.drawable.convenient),
+        //ENG
+        Priority(name = "Important", image = R.drawable.rocket),
+        Priority(name = "High", image = R.drawable.bomb),
+        Priority(name = "Medium", image = R.drawable.gauge),
+        Priority(name = "From the heart", image = R.drawable.convenient),
+
+        //ENG
+        Priority(name = "Muhim", image = R.drawable.rocket),
+        Priority(name = "Yuqori", image = R.drawable.bomb),
+        Priority(name = "O'rtacha", image = R.drawable.gauge),
+        Priority(name = "Yurakdan", image = R.drawable.convenient),
+    )
+    val img= array.filter {
+        imgName==it.name
+    }
+    try {
+        //Log.d(TAG, "ReturnImageToInt: ${img[0]}")
+        return img[0].image!!
+    }catch (e:Exception){
+        Log.d(TAG, "ReturnImageToInt: ${e.message}")
+        return 0
+    }
 }
