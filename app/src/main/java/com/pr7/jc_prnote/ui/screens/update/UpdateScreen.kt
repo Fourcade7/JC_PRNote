@@ -778,18 +778,18 @@ private fun ReturnPrImageToInt(
 ):Int {
 
     val array = listOf(
-        Priority(name = "Важное", image = R.drawable.rocket),
+        Priority(name = "ВАЖНОЕ", image = R.drawable.rocket),
         Priority(name = "Высокий", image = R.drawable.bomb),
         Priority(name = "Средний", image = R.drawable.gauge),
         Priority(name = "От души", image = R.drawable.convenient),
         //ENG
-        Priority(name = "Important", image = R.drawable.rocket),
+        Priority(name = "IMPORTANT", image = R.drawable.rocket),
         Priority(name = "High", image = R.drawable.bomb),
         Priority(name = "Medium", image = R.drawable.gauge),
         Priority(name = "From the heart", image = R.drawable.convenient),
 
         //ENG
-        Priority(name = "Muhim", image = R.drawable.rocket),
+        Priority(name = "MUHIM", image = R.drawable.rocket),
         Priority(name = "Yuqori", image = R.drawable.bomb),
         Priority(name = "O'rtacha", image = R.drawable.gauge),
         Priority(name = "Yurakdan", image = R.drawable.convenient),
